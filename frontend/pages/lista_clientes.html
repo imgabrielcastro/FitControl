@@ -1,35 +1,133 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FitControl - Lista de Clientes</title>
-    <link rel="stylesheet" href="/frontend/css/style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <nav class="nav" id="nav">
-        <ul>
-          <li><a href="../index.html">Início</a></li>
-          <li><a href="lista_clientes.html">Clientes</a></li>
-          <li><a href="pages/cadastro-instrutor.html">Instrutores</a></li>
-          <li><a href="pages/cadastro-contrato.html">Contratos</a></li>
-          <li><a href="pages/cadastro-modalidade.html">Modalidades</a></li>
-          <li><a href="pages/agenda.html">Agenda</a></li>
-          <li>
-            <a href="pages/relatorios/clientes-modalidade.html">Relatórios</a>
-          </li>
-        </ul>
-      </nav>
-
-      <div class="content">
-        <div class="image-box">
-          <img src="../assets/logo.png" alt="Logo FitControl" />
-        </div>
-        <div id="clientes-list"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitControl - Lista de Clientes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">FC</div>
+        <div class="brand-name">FitControl</div>
       </div>
-    </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="lista_clientes.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-instrutor.html" class="nav-link">
+            <i class="fas fa-dumbbell"></i>
+            <span>Instrutores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-contrato.html" class="nav-link">
+            <i class="fas fa-file-contract"></i>
+            <span>Contratos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-modalidade.html" class="nav-link">
+            <i class="fas fa-running"></i>
+            <span>Modalidades</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="agenda.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="relatorios/clientes-modalidade.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
 
-    <script src="../js/main.js"></script>
-  </body>
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      <div class="header">
+        <h1 class="page-title">
+          <i class="fas fa-users"></i>
+          Lista de Clientes
+        </h1>
+        
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" placeholder="Pesquisar cliente por nome, CPF ou email...">
+        </div>
+      </div>
+
+      <div class="clients-grid" id="clientes-list">
+        <!-- Os cards de clientes serão inseridos aqui via JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // Adicionando efeitos de interação
+    document.addEventListener('DOMContentLoaded', function() {
+      // Efeito de foco na barra de pesquisa
+      const searchContainer = document.querySelector('.search-container');
+      const searchInput = document.querySelector('.search-input');
+      
+      searchInput.addEventListener('focus', () => {
+        searchContainer.style.boxShadow = '0 4px 20px rgba(255, 111, 0, 0.2)';
+        searchContainer.style.borderColor = 'rgba(255, 111, 0, 0.3)';
+      });
+      
+      searchInput.addEventListener('blur', () => {
+        searchContainer.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.05)';
+        searchContainer.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+      });
+      
+      // Simulação de pesquisa
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.client-card');
+        
+        cards.forEach(card => {
+          const name = card.querySelector('.client-name').textContent.toLowerCase();
+          if (name.includes(searchTerm)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+      
+      // Efeito ao clicar nos botões
+      const removeButtons = document.querySelectorAll('.btn-remove');
+      removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const card = this.closest('.client-card');
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            card.style.display = 'none';
+          }, 300);
+        });
+      });
+    });
+  </script>
+</body>
 </html>
