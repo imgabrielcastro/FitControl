@@ -3,6 +3,16 @@ const apiURL = 'http://localhost:3000/clientes';
 const form = document.getElementById('clienteForm');
 const lista = document.getElementById('clientesList');
 
+
+const hamburgerMenu = document.getElementById('hamburger-menu');
+const nav = document.getElementById('nav');
+
+// Adiciona evento de clique no hambúrguer
+hamburgerMenu.addEventListener('click', () => {
+  // Alterna a classe 'open' no menu lateral
+  nav.classList.toggle('open');
+});
+
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
 
@@ -51,5 +61,12 @@ async function removerCliente(id) {
   await fetch(`${apiURL}/${id}`, { method: 'DELETE' });
   carregarClientes();
 }
+
+// Pega os elementos do hambúrguer e da navegação
+
+
+
+
+
 
 carregarClientes();

@@ -1,57 +1,105 @@
-body {
+/* Estilo Global */
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #fff;
+  background-color: #f4f4f4;
   color: #333;
 }
 
-header {
-  background-color: #ff6f00;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-
-main {
-  padding: 20px;
-  max-width: 800px;
-  margin: auto;
-}
-
-form {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-input, select, button {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-button {
-  background-color: #ff6f00;
-  color: white;
-  border: none;
+/* Menu Hambúrguer (Somente uma div) */
+.hamburger-menu {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: block;
   cursor: pointer;
+}
+
+.hamburger-menu .bar {
+  width: 30px;
+  height: 4px;
+  background-color: white;
+  margin: 6px auto;
+  transition: all 0.3s ease;
+}
+
+/* Menu Lateral */
+.nav {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Começa fora da tela */
+  width: 250px;
+  height: 100%;
+  background-color: #ff6f00;
+  padding-top: 60px;
   transition: 0.3s;
 }
 
-button:hover {
+.nav.open {
+  left: 0; /* Move o menu para a tela */
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.nav ul li {
+  margin-bottom: 20px;
+}
+
+.nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 15px;
+  display: block;
+  transition: background-color 0.3s ease;
+}
+
+.nav ul li a:hover {
   background-color: #e65c00;
-}
-
-#clientesList {
-  border-top: 2px solid #eee;
-  padding-top: 20px;
-}
-
-.cliente-card {
-  border: 1px solid #ff6f00;
-  padding: 10px;
-  margin-bottom: 10px;
   border-radius: 6px;
-  background: #fffdf8;
+}
+
+/* Estilos para conteúdo principal */
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.image-box {
+  width: 300px;
+  height: 300px;
+  background-color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.welcome-message h1 {
+  font-size: 2rem;
+  color: #ff6f00;
+  margin-bottom: 10px;
+}
+
+.welcome-message p {
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/* Mobile Responsivo */
+@media (max-width: 768px) {
+  .nav ul li a {
+    padding: 12px;
+    font-size: 16px;
+  }
 }
