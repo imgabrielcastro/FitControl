@@ -1,4 +1,4 @@
-/* Estilo Global */
+/* Estilo global */
 * {
   margin: 0;
   padding: 0;
@@ -9,39 +9,27 @@ body {
   font-family: 'Segoe UI', sans-serif;
   background-color: #f4f4f4;
   color: #333;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  margin: 0;
 }
 
-/* Menu Hambúrguer (Somente uma div) */
-.hamburger-menu {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  display: block;
-  cursor: pointer;
-}
-
-.hamburger-menu .bar {
-  width: 30px;
-  height: 4px;
-  background-color: white;
-  margin: 6px auto;
-  transition: all 0.3s ease;
-}
-
-/* Menu Lateral */
-.nav {
-  position: fixed;
-  top: 0;
-  left: -250px; /* Começa fora da tela */
-  width: 250px;
+/* Container principal (menu + conteúdo) */
+.container {
+  display: flex;
+  width: 100%;
   height: 100%;
-  background-color: #ff6f00;
-  padding-top: 60px;
-  transition: 0.3s;
 }
 
-.nav.open {
-  left: 0; /* Move o menu para a tela */
+/* Navegação à Esquerda (30% da tela) */
+.nav {
+  width: 15%;  /* 30% da tela */
+  background-color: #ff6f00;
+  padding-top: 30px;
+  padding: 20px;
+  height: 100vh; /* Ocupa toda a altura da tela */
+  overflow-y: auto;
 }
 
 .nav ul {
@@ -50,17 +38,18 @@ body {
 }
 
 .nav ul li {
-  margin-bottom: 20px;
+  margin: 40px 0;
 }
 
 .nav ul li a {
   text-decoration: none;
   color: white;
-  font-size: 18px;
+  font-size: 25px;
   font-weight: 600;
   padding: 15px;
   display: block;
   transition: background-color 0.3s ease;
+  border-radius: 10px;
 }
 
 .nav ul li a:hover {
@@ -68,38 +57,54 @@ body {
   border-radius: 6px;
 }
 
-/* Estilos para conteúdo principal */
-.main-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  margin-top: 50px;
+/* Conteúdo Principal (70% da tela) */
+.content {
+  width: 70%; /* 70% da tela */
+  padding: 20px;
+  height: 100vh; /* Ocupa toda a altura da tela */
+  overflow-y: auto; /* Permite rolagem caso o conteúdo exceda a altura */
 }
 
-.image-box {
-  width: 300px;
-  height: 300px;
-  background-color: #e0e0e0;
-  margin-bottom: 20px;
-}
-
-.welcome-message h1 {
-  font-size: 2rem;
+/* Estilo do cabeçalho */
+h1 {
   color: #ff6f00;
-  margin-bottom: 10px;
+  margin: 20px;
 }
 
-.welcome-message p {
-  font-size: 1.1rem;
-  color: #555;
+/* Estilos dos Cards */
+.cliente-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 15px;
+  border-radius: 8px;
+  width: 250px;
+  display: inline-block;
+  vertical-align: top;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Mobile Responsivo */
-@media (max-width: 768px) {
-  .nav ul li a {
-    padding: 12px;
-    font-size: 16px;
-  }
+.cliente-card h2 {
+  color: #ff6f00;
+  font-size: 1.5rem;
+}
+
+.cliente-card p {
+  font-size: 1rem;
+  color: #333;
+}
+
+.cliente-card button {
+  background-color: #ff6f00;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+.cliente-card button:hover {
+  background-color: #e65c00;
 }
