@@ -6,9 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const clienteRoutes = require('./routes/clientes');
-app.use('/clientes', clienteRoutes);
+const clienteRoutes = require('./routes/clientes');  
+app.use('/clientes', clienteRoutes);  
 
-app.listen(process.env.PORT, () => {
-  console.log(`Servidor rodando na porta ${process.env.PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
 });

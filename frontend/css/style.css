@@ -57,28 +57,25 @@ body {
   border-radius: 6px;
 }
 
-/* Conteúdo Principal (70% da tela) */
 .content {
-  width: 70%; /* 70% da tela */
+  width: 100%;
   padding: 20px;
-  height: 100vh; /* Ocupa toda a altura da tela */
-  overflow-y: auto; /* Permite rolagem caso o conteúdo exceda a altura */
+  height: 100vh; 
+  overflow-y: auto; 
 }
 
-/* Estilo do cabeçalho */
 h1 {
   color: #ff6f00;
   margin: 20px;
 }
 
-/* Estilos dos Cards */
 .cliente-card {
   background-color: #fff;
   border: 1px solid #ddd;
   padding: 20px;
   margin: 15px;
   border-radius: 8px;
-  width: 250px;
+  width: 350px;
   display: inline-block;
   vertical-align: top;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -107,4 +104,32 @@ h1 {
 
 .cliente-card button:hover {
   background-color: #e65c00;
+}
+
+.image-box {
+  width: 550px;           
+  height: 200px;         
+  background-color: #e0e0e0;
+  margin: 20px auto;      
+  overflow: hidden;      
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-background{
+    width: 1450px;          
+  height: 900px;        
+  background-color: #e0e0e0;
+  margin: 20px auto;      
+  overflow: hidden;      
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-box img {
+  width: 100%;            /* Ajusta a largura da imagem para 100% da div */
+  height: auto;           /* Mantém a proporção da imagem */
+  object-fit: contain;    /* Ajusta a imagem para caber dentro da div */
 }

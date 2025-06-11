@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitControl - Lista de Clientes</title>
-  <link rel="stylesheet" href="/frontend/css/style.css">
-</head>
-<body>
-  <div class="container">
-    <!-- Menu Lateral -->
-    <nav class="nav" id="nav">
-      <ul>
-        <li><a href="pages/cadastro-cliente.html">Início</a></li>
-        <li><a href="pages/cadastro-cliente.html">Clientes</a></li>
-        <li><a href="pages/cadastro-instrutor.html">Instrutores</a></li>
-        <li><a href="pages/cadastro-contrato.html">Contratos</a></li>
-        <li><a href="pages/cadastro-modalidade.html">Modalidades</a></li>
-        <li><a href="pages/agenda.html">Agenda</a></li>
-        <li><a href="pages/relatorios/clientes-modalidade.html">Relatórios</a></li>
-      </ul>
-    </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FitControl - Lista de Clientes</title>
+    <link rel="stylesheet" href="/frontend/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav" id="nav">
+        <ul>
+          <li><a href="../index.html">Início</a></li>
+          <li><a href="lista_clientes.html">Clientes</a></li>
+          <li><a href="pages/cadastro-instrutor.html">Instrutores</a></li>
+          <li><a href="pages/cadastro-contrato.html">Contratos</a></li>
+          <li><a href="pages/cadastro-modalidade.html">Modalidades</a></li>
+          <li><a href="pages/agenda.html">Agenda</a></li>
+          <li>
+            <a href="pages/relatorios/clientes-modalidade.html">Relatórios</a>
+          </li>
+        </ul>
+      </nav>
 
-    <!-- Conteúdo Principal -->
-    <div class="content">
-      <h1>Lista de Clientes</h1>
-      <div id="clientes-list"></div>
+      <div class="content">
+        <div class="image-box">
+          <img src="../assets/logo.png" alt="Logo FitControl" />
+        </div>
+        <div id="clientes-list"></div>
+      </div>
     </div>
-  </div>
 
-  <script src="/frontend/js/main.js"></script>
-</body>
+    <script src="../js/main.js"></script>
+  </body>
 </html>

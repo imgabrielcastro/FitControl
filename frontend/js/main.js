@@ -22,19 +22,21 @@ async function carregarClientes() {
   });
 }
 
-// Função para remover um cliente
 async function removerCliente(id) {
+  console.log(`Tentando remover o cliente com ID: ${id}`); // Log para depuração
+
   const res = await fetch(`http://localhost:3000/clientes/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE'  // Método DELETE para excluir o cliente
   });
 
   if (res.ok) {
+    console.log('Cliente removido com sucesso'); // Log para sucesso
     // Atualiza a lista de clientes após a remoção
     carregarClientes();
   } else {
+    console.log('Erro ao remover o cliente'); // Log para erro
     alert('Erro ao remover o cliente');
   }
 }
 
-// Carregar clientes ao carregar a página
 window.onload = carregarClientes;
