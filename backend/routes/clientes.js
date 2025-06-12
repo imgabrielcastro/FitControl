@@ -2,89 +2,104 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Rota para obter todos os clientes
+// Rota para obter todos os clientes (VIEW clientes_completo)
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM clientes_completo'); 
+    const result = await db.query('SELECT * FROM clientes_completo');
     res.json(result.rows);
   } catch (err) {
-    console.error('Erro ao consultar os clientes:', err);
-    res.status(500).send('Erro ao consultar os clientes');
+    console.error('Erro ao buscar clientes:', err);
+    res.status(500).json({ message: 'Erro ao buscar clientes' });
   }
 });
 
-// Rota para cadastrar um novo cliente
+// Rota para obter um cliente específico
+router.get('/:id', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT c.*, 
+             i.nome as instrutor_nome,
+             ct.nome as contrato_nome,
+             ct.valor as contrato_valor
+      FROM Cliente c
+      LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
+      LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
+      WHERE c.id_cliente = $1
+    `, [req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Cliente não encontrado' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao buscar cliente:', err);
+    res.status(500).json({ message: 'Erro ao buscar cliente' });
+  }
+});
+
+// Rota para criar/atualizar cliente
+// Rota para criar/atualizar cliente (POST único)
 router.post('/', async (req, res) => {
-  console.log('Dados recebidos:', req.body); // Adicione esta linha
+  const { id_cliente, ...data } = req.body;
   
-  const {
-    nome,
-    cpf,
-    telefone,
-    email,
-    sexo,
-    data_nascimento,
-    rua,
-    bairro,
-    cidade,
-    cep,
-    id_instrutor,
-    id_contrato
-  } = req.body;
-
-  // Validações básicas
-  if (!nome || !cpf || !sexo || !id_contrato) {
-    return res.status(400).json({ message: 'Campos obrigatórios não preenchidos' });
-  }
-
   try {
-    // Verifica se o CPF já existe
-    const cpfExistente = await db.query('SELECT id_cliente FROM Cliente WHERE cpf = $1', [cpf]);
-    if (cpfExistente.rows.length > 0) {
-      return res.status(400).json({ message: 'CPF já cadastrado' });
-    }
+    if (id_cliente) {
+      // Atualização
+      const result = await db.query(
+        `UPDATE Cliente SET
+          nome = $1, cpf = $2, telefone = $3, email = $4, sexo = $5,
+          data_nascimento = $6, rua = $7, bairro = $8, cidade = $9,
+          cep = $10, id_instrutor = $11, id_contrato = $12
+         WHERE id_cliente = $13
+         RETURNING *`,  // Alterado para retornar todos os dados
+        [
+          data.nome, data.cpf, data.telefone, data.email, data.sexo,
+          data.data_nascimento, data.rua, data.bairro, data.cidade,
+          data.cep, data.id_instrutor, data.id_contrato, id_cliente
+        ]
+      );
 
-    // Insere o novo cliente
-    const result = await db.query(
-      `INSERT INTO Cliente (
-        nome, cpf, telefone, email, sexo, data_nascimento, 
-        rua, bairro, cidade, cep, id_instrutor, id_contrato
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id_cliente`,
-      [
-        nome, cpf, telefone || null, email || null, sexo, data_nascimento || null,
-        rua || null, bairro || null, cidade || null, cep || null, 
-        id_instrutor || null, id_contrato
-      ]
-    );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Cliente não encontrado' 
+        });
+      }
 
-    res.status(201).json({
-      message: 'Cliente cadastrado com sucesso',
-      id_cliente: result.rows[0].id_cliente
-    });
-  } catch (err) {
-    console.error('Erro ao cadastrar cliente:', err);
-    res.status(500).json({ message: 'Erro ao cadastrar cliente' });
-  }
-});
+      res.json({ 
+        success: true,
+        data: result.rows[0],  // Retorna os dados atualizados
+        message: 'Cliente atualizado com sucesso'
+      });
 
-// Rota para remover um cliente
-router.delete('/:id', async (req, res) => {
-  const id = req.params.id;
-  console.log(`Tentando remover cliente com ID: ${id}`);
-
-  try {
-    const result = await db.query('DELETE FROM Cliente WHERE id_cliente = $1', [id]);
-
-    if (result.rowCount > 0) {
-      console.log(`Cliente com ID: ${id} removido com sucesso`);
-      res.status(200).send('Cliente removido com sucesso');
     } else {
-      console.log(`Cliente com ID: ${id} não encontrado`);
-      res.status(404).send('Cliente não encontrado');
+      // Criação
+      const result = await db.query(
+        `INSERT INTO Cliente (
+          nome, cpf, telefone, email, sexo, data_nascimento,
+          rua, bairro, cidade, cep, id_instrutor, id_contrato
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        RETURNING *`,  // Alterado para retornar todos os dados
+        [
+          data.nome, data.cpf, data.telefone, data.email, data.sexo,
+          data.data_nascimento, data.rua, data.bairro, data.cidade,
+          data.cep, data.id_instrutor, data.id_contrato
+        ]
+      );
+      
+      res.status(201).json({ 
+        success: true,
+        data: result.rows[0],  // Retorna os dados criados
+        message: 'Cliente cadastrado com sucesso'
+      });
     }
   } catch (err) {
-    console.error('Erro ao remover cliente:', err);
-    res.status(500).send('Erro ao remover cliente');
+    console.error('Erro ao salvar cliente:', err);
+    res.status(500).json({ 
+      success: false,
+      message: err.detail || 'Erro ao salvar cliente'
+    });
   }
 });
 
