@@ -9,6 +9,9 @@ app.use(express.json());
 const clienteRoutes = require('./routes/clientes');  
 app.use('/clientes', clienteRoutes);  
 
+const contratosRouter = require('./routes/contratos');
+app.use('/contratos', contratosRouter);
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);

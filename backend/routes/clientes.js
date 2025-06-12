@@ -6,31 +6,73 @@ const db = require('../db');
 router.get('/', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM clientes_completo'); 
-    res.json(result.rows); // Retorna os dados dos clientes em formato JSON
+    res.json(result.rows);
   } catch (err) {
     console.error('Erro ao consultar os clientes:', err);
     res.status(500).send('Erro ao consultar os clientes');
   }
 });
 
-// Rota para remover um cliente
-router.get('/', async (req, res) => {
+// Rota para cadastrar um novo cliente
+router.post('/', async (req, res) => {
+  console.log('Dados recebidos:', req.body); // Adicione esta linha
+  
+  const {
+    nome,
+    cpf,
+    telefone,
+    email,
+    sexo,
+    data_nascimento,
+    rua,
+    bairro,
+    cidade,
+    cep,
+    id_instrutor,
+    id_contrato
+  } = req.body;
+
+  // Validações básicas
+  if (!nome || !cpf || !sexo || !id_contrato) {
+    return res.status(400).json({ message: 'Campos obrigatórios não preenchidos' });
+  }
+
   try {
-    const result = await db.query('SELECT * FROM clientes_completo');
-    res.json(result.rows);  // Retorna os dados dos clientes
+    // Verifica se o CPF já existe
+    const cpfExistente = await db.query('SELECT id_cliente FROM Cliente WHERE cpf = $1', [cpf]);
+    if (cpfExistente.rows.length > 0) {
+      return res.status(400).json({ message: 'CPF já cadastrado' });
+    }
+
+    // Insere o novo cliente
+    const result = await db.query(
+      `INSERT INTO Cliente (
+        nome, cpf, telefone, email, sexo, data_nascimento, 
+        rua, bairro, cidade, cep, id_instrutor, id_contrato
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id_cliente`,
+      [
+        nome, cpf, telefone || null, email || null, sexo, data_nascimento || null,
+        rua || null, bairro || null, cidade || null, cep || null, 
+        id_instrutor || null, id_contrato
+      ]
+    );
+
+    res.status(201).json({
+      message: 'Cliente cadastrado com sucesso',
+      id_cliente: result.rows[0].id_cliente
+    });
   } catch (err) {
-    console.error('Erro ao consultar os clientes:', err);
-    res.status(500).send('Erro ao consultar os clientes');
+    console.error('Erro ao cadastrar cliente:', err);
+    res.status(500).json({ message: 'Erro ao cadastrar cliente' });
   }
 });
 
 // Rota para remover um cliente
 router.delete('/:id', async (req, res) => {
-  const id = req.params.id;  // Pega o id do cliente da URL
-  console.log(`Tentando remover cliente com ID: ${id}`);  // Log para depuração
+  const id = req.params.id;
+  console.log(`Tentando remover cliente com ID: ${id}`);
 
   try {
-    // A exclusão agora é feita automaticamente pela chave estrangeira com ON DELETE CASCADE
     const result = await db.query('DELETE FROM Cliente WHERE id_cliente = $1', [id]);
 
     if (result.rowCount > 0) {
@@ -45,6 +87,5 @@ router.delete('/:id', async (req, res) => {
     res.status(500).send('Erro ao remover cliente');
   }
 });
-
 
 module.exports = router;
