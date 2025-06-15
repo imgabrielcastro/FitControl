@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitControl - Modalidades</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">FC</div>
+        <div class="brand-name">FitControl</div>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="lista_clientes.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-instrutor.html" class="nav-link">
+            <i class="fas fa-dumbbell"></i>
+            <span>Instrutores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-contrato.html" class="nav-link">
+            <i class="fas fa-file-contract"></i>
+            <span>Contratos</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="cadastro-modalidade.html" class="nav-link">
+            <i class="fas fa-running"></i>
+            <span>Modalidades</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="agenda.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="relatorios/clientes-modalidade.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <h1 class="page-title">
+          <i class="fas fa-running"></i>
+          Lista de Modalidades
+        </h1>
+        
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" placeholder="Pesquisar modalidade por nome..." id="search-modalidade">
+        </div>
+        
+        <div class="header-actions">
+          <button id="btn-nova-modalidade" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nova Modalidade
+          </button>
+        </div>
+      </div>
+
+      <div class="clients-grid" id="modalidades-list">
+        <!-- Modalidades serão carregadas aqui via JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de Cadastro -->
+  <div id="modal-cadastro" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="modal-title">Cadastrar Nova Modalidade</h2>
+      <form id="form-cadastro-modalidade">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalidade-nome">Nome da Modalidade*</label>
+            <input type="text" id="modalidade-nome" name="nome" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalidade-ativo">Status*</label>
+            <select id="modalidade-ativo" name="ativo" required>
+              <option value="true" selected>Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="modal-submit-btn">Salvar Modalidade</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -532,3 +532,40 @@ input:focus:invalid, select:focus:invalid {
 .feedback.error {
   background-color: #f44336;
 }
+
+/* Estilos específicos para modalidades */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+}
+
+.status-badge.inactive {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.btn-activate {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.btn-activate:hover {
+  background: rgba(46, 204, 113, 0.2);
+}
+
+/* Ajustes para os cards de modalidades */
+.client-card[data-status="false"] {
+  opacity: 0.8;
+  border-left-color: #e74c3c;
+}
+
+.client-card[data-status="true"] {
+  border-left-color: #2ecc71;
+}

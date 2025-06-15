@@ -12,7 +12,11 @@ app.use('/clientes', clienteRoutes);
 const contratosRouter = require('./routes/contratos');
 app.use('/contratos', contratosRouter);
 
+const modalidadesRouter = require('./routes/modalidades');
+app.use('/modalidades', modalidadesRouter);
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
+
