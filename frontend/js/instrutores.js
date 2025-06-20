@@ -23,7 +23,7 @@ function mostrarFeedback(mensagem, tipo = "success") {
 // CRUD Instrutores
 async function carregarInstrutores() {
   try {
-    const res = await fetch("http://localhost:3000/routes/instrutores");
+    const res = await fetch("http://localhost:3000/instrutores");
     const instrutores = await res.json();
 
     const instrutoresGrid = document.getElementById("instrutores-list");
