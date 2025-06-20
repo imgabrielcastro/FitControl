@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitControl - Lista de Clientes</title>
+  <title>FitControl - Lista de Instrutores</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,14 +23,14 @@
             <span>Início</span>
           </a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item">
           <a href="lista_clientes.html" class="nav-link">
             <i class="fas fa-users"></i>
             <span>Clientes</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a href="cadastro-instrutor.html" class="nav-link">
+        <li class="nav-item active">
+          <a href="lista_instrutores.html" class="nav-link">
             <i class="fas fa-dumbbell"></i>
             <span>Instrutores</span>
           </a>
@@ -66,34 +66,36 @@
     <main class="main-content">
       <div class="header">
         <h1 class="page-title">
-          <i class="fas fa-users"></i>
-          Lista de Clientes
+          <i class="fas fa-dumbbell"></i>
+          Lista de Instrutores
         </h1>
         
         <div class="search-container">
           <i class="fas fa-search"></i>
-          <input type="text" class="search-input" placeholder="Pesquisar cliente por nome, CPF ou email...">
+          <input type="text" class="search-input" placeholder="Pesquisar instrutor por nome, CPF ou email..." id="search-instrutores">
         </div>
         
         <div class="header-actions">
-          <button id="btn-novo-cliente" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Novo Cliente
+          <button id="btn-novo-instrutor" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Novo Instrutor
           </button>
         </div>
       </div>
 
-      <div class="clients-grid" id="clientes-list">
-        <!-- Os cards de clientes serão inseridos aqui via JavaScript -->
+      <div class="clients-grid" id="instrutores-list">
+        <!-- Os cards de instrutores serão inseridos aqui via JavaScript -->
       </div>
     </main>
   </div>
 
-  <!-- Modal de Cadastro de Cliente -->
+  <!-- Modal de Cadastro de Instrutor -->
   <div id="modal-cadastro" class="modal">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
-      <h2>Cadastrar Novo Cliente</h2>
-      <form id="form-cadastro-cliente">
+      <h2>Cadastrar Novo Instrutor</h2>
+      <form id="form-cadastro-instrutor">
+        <input type="hidden" id="id_instrutor" name="id_instrutor">
+        
         <div class="form-row">
           <div class="form-group">
             <label for="nome">Nome Completo*</label>
@@ -126,8 +128,11 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="data_nascimento">Data de Nascimento</label>
-            <input type="date" id="data_nascimento" name="data_nascimento">
+            <label for="situacao">Situação*</label>
+            <select id="situacao" name="situacao" required>
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
           </div>
         </div>
         
@@ -153,26 +158,11 @@
           </div>
         </div>
         
-        <div class="form-row">
-          <div class="form-group">
-            <label for="id_instrutor">Instrutor</label>
-            <select id="id_instrutor" name="id_instrutor">
-              <option value="">Não atribuído</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="id_contrato">Contrato*</label>
-            <select id="id_contrato" name="id_contrato" required>
-              <option value="" selected disabled>Carregando contratos...</option>
-            </select>
-          </div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary">Cadastrar Cliente</button>
+        <button type="submit" class="btn btn-primary">Salvar Instrutor</button>
       </form>
     </div>
   </div>
 
-  <script src="../js/clientes.js" defer></script>
+  <script src="../js/instrutores.js"></script>
 </body>
 </html>

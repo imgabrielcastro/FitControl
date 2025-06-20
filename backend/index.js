@@ -15,6 +15,9 @@ app.use('/contratos', contratosRouter);
 const modalidadesRouter = require('./routes/modalidades');
 app.use('/modalidades', modalidadesRouter);
 
+const instrutoresRouter = require('./routes/instrutores');
+app.use('/instrutores', instrutoresRouter);
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);

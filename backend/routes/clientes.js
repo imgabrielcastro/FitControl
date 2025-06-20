@@ -2,19 +2,30 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Rota para obter todos os clientes (VIEW clientes_completo)
+// Rota para obter todos os clientes
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM clientes_completo');
+    const result = await db.query(`
+      SELECT c.*, 
+             i.nome as instrutor_nome,
+             ct.nome as contrato_nome,
+             ct.valor as contrato_valor
+      FROM Cliente c
+      LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
+      LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
+      ORDER BY c.nome
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error('Erro ao buscar clientes:', err);
-    res.status(500).json({ message: 'Erro ao buscar clientes' });
+    res.status(500).json({ success: false, message: 'Erro ao buscar clientes' });
   }
 });
 
 // Rota para obter um cliente específico
-router.get('/:id', async (req, res) => {
+router.post('/', async (req, res) => {
+  console.log('Dados recebidos:', req.body); // Adicione esta linha para debug
+  const { id_cliente, ...data } = req.body;
   try {
     const result = await db.query(`
       SELECT c.*, 
@@ -28,18 +39,17 @@ router.get('/:id', async (req, res) => {
     `, [req.params.id]);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Cliente não encontrado' });
+      return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
     }
     
-    res.json(result.rows[0]);
+    res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Erro ao buscar cliente:', err);
-    res.status(500).json({ message: 'Erro ao buscar cliente' });
+    res.status(500).json({ success: false, message: 'Erro ao buscar cliente' });
   }
 });
 
 // Rota para criar/atualizar cliente
-// Rota para criar/atualizar cliente (POST único)
 router.post('/', async (req, res) => {
   const { id_cliente, ...data } = req.body;
   
@@ -52,7 +62,7 @@ router.post('/', async (req, res) => {
           data_nascimento = $6, rua = $7, bairro = $8, cidade = $9,
           cep = $10, id_instrutor = $11, id_contrato = $12
          WHERE id_cliente = $13
-         RETURNING *`,  // Alterado para retornar todos os dados
+         RETURNING *`,
         [
           data.nome, data.cpf, data.telefone, data.email, data.sexo,
           data.data_nascimento, data.rua, data.bairro, data.cidade,
@@ -69,7 +79,7 @@ router.post('/', async (req, res) => {
 
       res.json({ 
         success: true,
-        data: result.rows[0],  // Retorna os dados atualizados
+        data: result.rows[0],
         message: 'Cliente atualizado com sucesso'
       });
 
@@ -80,7 +90,7 @@ router.post('/', async (req, res) => {
           nome, cpf, telefone, email, sexo, data_nascimento,
           rua, bairro, cidade, cep, id_instrutor, id_contrato
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        RETURNING *`,  // Alterado para retornar todos os dados
+        RETURNING *`,
         [
           data.nome, data.cpf, data.telefone, data.email, data.sexo,
           data.data_nascimento, data.rua, data.bairro, data.cidade,
@@ -90,7 +100,7 @@ router.post('/', async (req, res) => {
       
       res.status(201).json({ 
         success: true,
-        data: result.rows[0],  // Retorna os dados criados
+        data: result.rows[0],
         message: 'Cliente cadastrado com sucesso'
       });
     }
@@ -99,6 +109,31 @@ router.post('/', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: err.detail || 'Erro ao salvar cliente'
+    });
+  }
+});
+
+// Rota para deletar cliente
+router.delete('/:id', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM Cliente WHERE id_cliente = $1 RETURNING *', [req.params.id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Cliente não encontrado' 
+      });
+    }
+
+    res.json({ 
+      success: true,
+      message: 'Cliente removido com sucesso'
+    });
+  } catch (err) {
+    console.error('Erro ao remover cliente:', err);
+    res.status(500).json({ 
+      success: false,
+      message: err.detail || 'Erro ao remover cliente'
     });
   }
 });
