@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Middleware para garantir que todas as respostas são JSON
+router.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 // Helper para converter time string para timestamp
 const timeToTimestamp = (timeStr) => {
   if (!timeStr) return null;
@@ -64,6 +70,44 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Obter uma agenda específica por ID
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(`
+      SELECT 
+        a.*,
+        m.nome as modalidade_nome,
+        i.nome as instrutor_nome
+      FROM agenda a
+      JOIN modalidade m ON a.id_modalidade = m.id_modalidade
+      JOIN instrutor i ON a.id_instrutor = i.id_instrutor
+      WHERE a.id_agenda = $1
+    `, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Agenda não encontrada' 
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result.rows[0],
+      message: 'Agenda encontrada com sucesso'
+    });
+  } catch (err) {
+    console.error('Erro ao buscar agenda:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao buscar agenda',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
 // Cadastrar nova agenda
 router.post('/', async (req, res) => {
   const { 
@@ -76,6 +120,14 @@ router.post('/', async (req, res) => {
     data_fim, 
     diadasemana 
   } = req.body;
+
+  // Validação básica
+  if (!id_modalidade || !id_instrutor || !qtde_max_cli || !local || !data_ini || !data_fim || !diadasemana) {
+    return res.status(400).json({
+      success: false,
+      message: 'Todos os campos obrigatórios devem ser preenchidos'
+    });
+  }
 
   try {
     // Converter horários para timestamp
@@ -134,6 +186,14 @@ router.put('/:id', async (req, res) => {
     data_fim, 
     diadasemana 
   } = req.body;
+
+  // Validação básica
+  if (!id_modalidade || !id_instrutor || !qtde_max_cli || !local || !data_ini || !data_fim || !diadasemana) {
+    return res.status(400).json({
+      success: false,
+      message: 'Todos os campos obrigatórios devem ser preenchidos'
+    });
+  }
 
   try {
     // Converter horários para timestamp
@@ -230,10 +290,12 @@ router.get('/:id/clientes', async (req, res) => {
         c.id_cliente,
         c.nome,
         c.cpf,
-        c.email
+        c.email,
+        c.telefone
       FROM cliente c
       JOIN cliente_agenda ca ON c.id_cliente = ca.id_cliente
-      WHERE ca.id_agenda = $1
+      WHERE ca.id_agenda = $1 AND c.ativo = true
+      ORDER BY c.nome
     `, [id]);
 
     res.json({
@@ -256,11 +318,56 @@ router.post('/:id/clientes', async (req, res) => {
   const { id } = req.params;
   const { id_cliente } = req.body;
 
+  if (!id_cliente) {
+    return res.status(400).json({
+      success: false,
+      message: 'ID do cliente é obrigatório'
+    });
+  }
+
   try {
+    // Verificar se o cliente existe e está ativo
+    const clienteCheck = await db.query(
+      'SELECT id_cliente FROM cliente WHERE id_cliente = $1 AND ativo = true',
+      [id_cliente]
+    );
+
+    if (clienteCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cliente não encontrado ou inativo'
+      });
+    }
+
+    // Verificar se a agenda existe
+    const agendaCheck = await db.query(
+      'SELECT id_agenda FROM agenda WHERE id_agenda = $1',
+      [id]
+    );
+
+    if (agendaCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Agenda não encontrada'
+      });
+    }
+
+    // Verificar se já está vinculado
+    const vinculoCheck = await db.query(
+      'SELECT id_cliente FROM cliente_agenda WHERE id_agenda = $1 AND id_cliente = $2',
+      [id, id_cliente]
+    );
+
+    if (vinculoCheck.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cliente já vinculado a esta agenda'
+      });
+    }
+
     await db.query(
       `INSERT INTO cliente_agenda (id_agenda, id_cliente)
-       VALUES ($1, $2)
-       ON CONFLICT (id_agenda, id_cliente) DO NOTHING`,
+       VALUES ($1, $2)`,
       [id, id_cliente]
     );
 
@@ -283,11 +390,19 @@ router.delete('/:id_agenda/clientes/:id_cliente', async (req, res) => {
   const { id_agenda, id_cliente } = req.params;
 
   try {
-    await db.query(
+    const result = await db.query(
       `DELETE FROM cliente_agenda 
-       WHERE id_agenda = $1 AND id_cliente = $2`,
+       WHERE id_agenda = $1 AND id_cliente = $2
+       RETURNING *`,
       [id_agenda, id_cliente]
     );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vínculo não encontrado'
+      });
+    }
 
     res.json({
       success: true,
@@ -303,11 +418,16 @@ router.delete('/:id_agenda/clientes/:id_cliente', async (req, res) => {
   }
 });
 
-// Listar todos os clientes (para vincular)
+// Listar todos os clientes disponíveis para vincular
 router.get('/clientes/disponiveis', async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT id_cliente, nome, cpf, email 
+      SELECT 
+        id_cliente, 
+        nome, 
+        cpf, 
+        email, 
+        telefone
       FROM cliente 
       WHERE ativo = true
       ORDER BY nome

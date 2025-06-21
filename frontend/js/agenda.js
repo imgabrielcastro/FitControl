@@ -1,3 +1,5 @@
+// js/agenda.js
+
 // Variáveis globais
 let modalidades = [];
 let instrutores = [];
@@ -27,13 +29,50 @@ function formatarHorario(horario) {
   return date.toTimeString().substring(0, 5);
 }
 
+// Função auxiliar para carregar recursos com tratamento de erro robusto
+async function carregarRecurso(url, nome) {
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
+    
+    // Verifique o tipo de conteúdo
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Resposta de ${nome} não é JSON: ${text.substring(0, 100)}...`);
+    }
+    
+    const result = await response.json();
+    
+    // Verifique a estrutura da resposta
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error(`Formato inesperado na resposta de ${nome}`);
+    }
+    
+    return result.data;
+  } catch (error) {
+    console.error(`Erro ao carregar ${nome}:`, error);
+    mostrarFeedback(`Erro ao carregar ${nome}: ${error.message}`, "error");
+    return [];
+  }
+}
+
 // Carregar dependências (modalidades, instrutores, clientes)
 async function carregarDependencias() {
   try {
     // Carregar modalidades
-    const resModalidades = await fetch("http://localhost:3000/modalidades");
-    const { data: mods } = await resModalidades.json();
-    modalidades = mods;
+    modalidades = await carregarRecurso("http://localhost:3000/modalidades", "modalidades");
     
     const selectModalidade = document.getElementById("agenda-modalidade");
     selectModalidade.innerHTML = '<option value="">Selecione uma modalidade</option>';
@@ -45,9 +84,7 @@ async function carregarDependencias() {
     });
 
     // Carregar instrutores
-    const resInstrutores = await fetch("http://localhost:3000/instrutores");
-    const { data: instrs } = await resInstrutores.json();
-    instrutores = instrs;
+    instrutores = await carregarRecurso("http://localhost:3000/instrutores", "instrutores");
     
     const selectInstrutor = document.getElementById("agenda-instrutor");
     selectInstrutor.innerHTML = '<option value="">Selecione um instrutor</option>';
@@ -59,9 +96,7 @@ async function carregarDependencias() {
     });
 
     // Carregar clientes disponíveis
-    const resClientes = await fetch("http://localhost:3000/agendas/clientes/disponiveis");
-    const { data: clis } = await resClientes.json();
-    clientes = clis;
+    clientes = await carregarRecurso("http://localhost:3000/agendas/clientes/disponiveis", "clientes disponíveis");
     
     const selectCliente = document.getElementById("cliente-select");
     selectCliente.innerHTML = '<option value="">Selecione um cliente</option>';
@@ -73,7 +108,7 @@ async function carregarDependencias() {
     });
   } catch (error) {
     console.error("Erro ao carregar dependências:", error);
-    mostrarFeedback("Erro ao carregar dados", "error");
+    mostrarFeedback("Erro ao carregar dados: " + error.message, "error");
   }
 }
 
@@ -81,16 +116,44 @@ async function carregarDependencias() {
 async function carregarAgendas(dia = currentDay) {
   try {
     const response = await fetch(`http://localhost:3000/agendas?dia=${dia}`);
-    const { data: agendas } = await response.json();
+    
+    // Verifique se a resposta é OK
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
+    
+    // Verifique o tipo de conteúdo
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Resposta não é JSON: ${text.substring(0, 100)}...`);
+    }
+    
+    const result = await response.json();
+    
+    // Verifique a estrutura da resposta
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error('Resposta da API em formato inesperado');
+    }
+    
+    const agendas = result.data;
     
     const container = document.getElementById("agendas-list");
     container.innerHTML = '';
     
-    if (!agendas || agendas.length === 0) {
+    if (agendas.length === 0) {
       container.innerHTML = `
         <div class="no-results" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
           <i class="fas fa-calendar-times" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
-          <h3 style="color: var(--text-light);">Nenhuma agenda encontrada</h3>
+          <h3 style="color: var(--text-light);">Nenhuma agenda encontrada para ${dia}</h3>
           <p style="color: var(--text-light); margin-top: 10px;">Clique em "Nova Agenda" para criar uma nova programação</p>
         </div>
       `;
@@ -100,7 +163,7 @@ async function carregarAgendas(dia = currentDay) {
     agendas.forEach(agenda => {
       const horarioIni = formatarHorario(agenda.data_ini);
       const horarioFim = formatarHorario(agenda.data_fim);
-      const vagasDisponiveis = agenda.qtde_max_cli - agenda.clientes_vinculados;
+      const vagasDisponiveis = agenda.qtde_max_cli - (agenda.clientes_vinculados || 0);
       
       const card = document.createElement('div');
       card.className = 'agenda-card';
@@ -149,7 +212,7 @@ async function carregarAgendas(dia = currentDay) {
     });
   } catch (error) {
     console.error("Erro ao carregar agendas:", error);
-    mostrarFeedback("Erro ao carregar agendas", "error");
+    mostrarFeedback("Erro ao carregar agendas: " + error.message, "error");
   }
 }
 
@@ -159,18 +222,47 @@ function abrirFormularioAgenda() {
   form.style.display = 'block';
   document.getElementById("clientes-section").style.display = 'none';
   document.getElementById("modal-agenda-title").textContent = "Nova Agenda";
-  form.reset();
+  document.getElementById("form-agenda").reset();
   document.getElementById("agenda-dia").value = currentDay;
   currentAgendaId = null;
+  
+  // Scroll para o formulário
+  form.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Preencher formulário para edição
 async function editarAgenda(id) {
   try {
     const response = await fetch(`http://localhost:3000/agendas/${id}`);
-    if (!response.ok) throw new Error("Agenda não encontrada");
     
-    const { data: agenda } = await response.json();
+    // Verifique se a resposta é OK
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
+    
+    // Verifique o tipo de conteúdo
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Resposta não é JSON: ${text.substring(0, 100)}...`);
+    }
+    
+    const result = await response.json();
+    
+    // Verifique a estrutura da resposta
+    if (!result.success || !result.data) {
+      throw new Error('Resposta da API em formato inesperado');
+    }
+    
+    const agenda = result.data;
     
     currentAgendaId = id;
     document.getElementById("agenda-id").value = id;
@@ -192,7 +284,7 @@ async function editarAgenda(id) {
     await carregarClientesVinculados(id);
   } catch (error) {
     console.error("Erro ao editar agenda:", error);
-    mostrarFeedback(error.message, "error");
+    mostrarFeedback("Erro ao editar agenda: " + error.message, "error");
   }
 }
 
@@ -200,17 +292,45 @@ async function editarAgenda(id) {
 async function carregarClientesVinculados(idAgenda) {
   try {
     const response = await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes`);
-    const { data: clientes } = await response.json();
+    
+    // Verifique se a resposta é OK
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
+    
+    // Verifique o tipo de conteúdo
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Resposta não é JSON: ${text.substring(0, 100)}...`);
+    }
+    
+    const result = await response.json();
+    
+    // Verifique a estrutura da resposta
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error('Resposta da API em formato inesperado');
+    }
+    
+    const clientesVinculados = result.data;
     
     const container = document.getElementById("clientes-list");
     container.innerHTML = '';
     
-    if (!clientes || clientes.length === 0) {
+    if (clientesVinculados.length === 0) {
       container.innerHTML = '<p>Nenhum cliente vinculado</p>';
       return;
     }
     
-    clientes.forEach(cliente => {
+    clientesVinculados.forEach(cliente => {
       const item = document.createElement('div');
       item.className = 'cliente-item';
       item.innerHTML = `
@@ -231,12 +351,16 @@ async function carregarClientesVinculados(idAgenda) {
     });
   } catch (error) {
     console.error("Erro ao carregar clientes vinculados:", error);
+    mostrarFeedback("Erro ao carregar clientes vinculados: " + error.message, "error");
   }
 }
 
 // Vincular cliente
 async function vincularCliente() {
-  if (!currentAgendaId) return;
+  if (!currentAgendaId) {
+    mostrarFeedback("Selecione uma agenda antes de vincular clientes", "error");
+    return;
+  }
   
   const idCliente = document.getElementById("cliente-select").value;
   
@@ -246,33 +370,57 @@ async function vincularCliente() {
   }
   
   try {
-    await fetch(`http://localhost:3000/agendas/${currentAgendaId}/clientes`, {
+    const response = await fetch(`http://localhost:3000/agendas/${currentAgendaId}/clientes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id_cliente: idCliente })
     });
+    
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
     
     mostrarFeedback("Cliente vinculado com sucesso", "success");
     await carregarClientesVinculados(currentAgendaId);
     document.getElementById("cliente-select").value = '';
   } catch (error) {
     console.error("Erro ao vincular cliente:", error);
-    mostrarFeedback("Erro ao vincular cliente", "error");
+    mostrarFeedback("Erro ao vincular cliente: " + error.message, "error");
   }
 }
 
 // Desvincular cliente
 async function desvincularCliente(idAgenda, idCliente) {
   try {
-    await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes/${idCliente}`, {
+    const response = await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes/${idCliente}`, {
       method: "DELETE"
     });
+    
+    if (!response.ok) {
+      // Tente extrair a mensagem de erro do JSON
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        // Se não conseguir parsear como JSON, use o texto
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+    }
     
     mostrarFeedback("Cliente desvinculado com sucesso", "success");
     await carregarClientesVinculados(idAgenda);
   } catch (error) {
     console.error("Erro ao desvincular cliente:", error);
-    mostrarFeedback("Erro ao desvincular cliente", "error");
+    mostrarFeedback("Erro ao desvincular cliente: " + error.message, "error");
   }
 }
 
@@ -294,6 +442,12 @@ async function salvarAgenda(event) {
     diadasemana: document.getElementById("agenda-dia").value
   };
   
+  // Validação básica
+  if (!data.id_modalidade || !data.id_instrutor || !data.qtde_max_cli || !data.local || !data.data_ini || !data.data_fim) {
+    mostrarFeedback("Preencha todos os campos obrigatórios", "error");
+    return;
+  }
+  
   try {
     const url = isEdit 
       ? `http://localhost:3000/agendas/${id}`
@@ -308,12 +462,18 @@ async function salvarAgenda(event) {
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Erro ao salvar agenda");
+      // Tente extrair a mensagem de erro
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
     }
     
     mostrarFeedback(
-      isEdit ? "Agenda atualizada com sucesso" : "Agenda criada com sucesso", 
+      isEdit ? "Agenda atualizada com sucesso!" : "Agenda criada com sucesso!", 
       "success"
     );
     
@@ -321,7 +481,7 @@ async function salvarAgenda(event) {
     await carregarAgendas(currentDay);
   } catch (error) {
     console.error("Erro ao salvar agenda:", error);
-    mostrarFeedback(error.message, "error");
+    mostrarFeedback("Erro ao salvar agenda: " + error.message, "error");
   }
 }
 
@@ -335,21 +495,28 @@ async function excluirAgenda(id) {
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Erro ao excluir agenda");
+      // Tente extrair a mensagem de erro
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      } catch (jsonError) {
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
     }
     
     mostrarFeedback("Agenda excluída com sucesso", "success");
     await carregarAgendas(currentDay);
   } catch (error) {
     console.error("Erro ao excluir agenda:", error);
-    mostrarFeedback(error.message, "error");
+    mostrarFeedback("Erro ao excluir agenda: " + error.message, "error");
   }
 }
 
 // Fechar formulário
 function fecharFormularioAgenda() {
   document.getElementById("form-agenda").style.display = 'none';
+  document.getElementById("clientes-section").style.display = 'none';
 }
 
 // Inicialização
