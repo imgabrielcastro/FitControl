@@ -347,10 +347,10 @@ router.delete('/:id_agenda/clientes/:id_cliente', async (req, res) => {
 // Listar clientes disponíveis para vincular
 router.get('/clientes/disponiveis', async (req, res) => {
   try {
+    // CORREÇÃO: Removido o filtro por 'ativo' que não existe
     const result = await db.query(`
       SELECT id_cliente, nome, cpf, email 
       FROM cliente 
-      WHERE ativo = true
       ORDER BY nome
     `);
 

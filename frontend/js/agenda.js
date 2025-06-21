@@ -337,6 +337,15 @@ async function salvarAgenda(event) {
     diadasemana: form.querySelector('#agenda-dia').value
   };
   
+  // Validar horários
+  const horaIni = new Date(`1970-01-01T${data.data_ini}:00`);
+  const horaFim = new Date(`1970-01-01T${data.data_fim}:00`);
+  
+  if (horaFim <= horaIni) {
+    mostrarFeedback('O horário final deve ser após o inicial', 'error');
+    return;
+  }
+  
   try {
     const url = id ? `http://localhost:3000/agendas/${id}` : 'http://localhost:3000/agendas';
     const method = id ? 'PUT' : 'POST';

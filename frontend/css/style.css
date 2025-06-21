@@ -517,7 +517,8 @@ input:focus:invalid, select:focus:invalid {
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
-  z-index: 1000;
+  z-index: 10000; /* Garantir que fique acima de tudo */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .feedback.show {
