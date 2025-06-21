@@ -78,9 +78,6 @@ async function carregarModalidades() {
           </div>
         </div>
         <div class="client-actions">
-          <button class="btn btn-edit" data-id="${modalidade.id_modalidade}">
-            <i class="fas fa-edit"></i> Editar
-          </button>
           <button class="btn ${modalidade.ativo ? "btn-remove" : "btn-activate"}" data-id="${modalidade.id_modalidade}">
             <i class="fas ${modalidade.ativo ? "fa-ban" : "fa-check"}"></i> 
             ${modalidade.ativo ? "Inativar" : "Ativar"}
@@ -240,3 +237,8 @@ function initModalidades() {
 if (document.getElementById("modalidades-list")) {
   document.addEventListener("DOMContentLoaded", initModalidades);
 }
+/* Alterar
+<button class="btn btn-edit" data-id="${modalidade.id_modalidade}">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+*/

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendas - SaaS Fitness</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">FC</div>
+        <div class="brand-name">FitControl</div>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="lista_clientes.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="lista_instrutores.html" class="nav-link">
+            <i class="fas fa-dumbbell"></i>
+            <span>Instrutores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-contrato.html" class="nav-link">
+            <i class="fas fa-file-contract"></i>
+            <span>Contratos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-modalidade.html" class="nav-link">
+            <i class="fas fa-running"></i>
+            <span>Modalidades</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="agenda.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="relatorios/clientes-modalidade.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="header">
+        <h1 class="page-title">
+          <i class="fas fa-calendar-alt"></i> Agendas
+        </h1>
+        <div class="header-actions">
+          <button id="btn-nova-agenda" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nova Agenda
+          </button>
+        </div>
+      </div>
+
+      <!-- Abas dos dias da semana -->
+      <div class="week-tabs">
+        <button class="tab-btn active" data-day="SEG">Segunda</button>
+        <button class="tab-btn" data-day="TER">Terça</button>
+        <button class="tab-btn" data-day="QUA">Quarta</button>
+        <button class="tab-btn" data-day="QUI">Quinta</button>
+        <button class="tab-btn" data-day="SEX">Sexta</button>
+        <button class="tab-btn" data-day="SAB">Sábado</button>
+        <button class="tab-btn" data-day="DOM">Domingo</button>
+      </div>
+
+      <!-- Formulário de agenda (inicialmente oculto) -->
+      <form id="form-agenda" class="agenda-form" style="display: none;">
+        <h2 id="modal-agenda-title">Nova Agenda</h2>
+        
+        <input type="hidden" id="agenda-id">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agenda-modalidade"><i class="fas fa-dumbbell"></i> Modalidade</label>
+            <select id="agenda-modalidade" required></select>
+          </div>
+          
+          <div class="form-group">
+            <label for="agenda-instrutor"><i class="fas fa-user-tie"></i> Instrutor</label>
+            <select id="agenda-instrutor" required></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agenda-descricao"><i class="fas fa-align-left"></i> Descrição</label>
+            <textarea id="agenda-descricao" rows="3" placeholder="Descrição da aula ou atividade"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agenda-qtde-max"><i class="fas fa-users"></i> Quantidade Máx. Clientes</label>
+            <input type="number" id="agenda-qtde-max" min="1" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="agenda-local"><i class="fas fa-map-marker-alt"></i> Local</label>
+            <input type="text" id="agenda-local" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agenda-data-ini"><i class="fas fa-clock"></i> Horário Início</label>
+            <input type="time" id="agenda-data-ini" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="agenda-data-fim"><i class="fas fa-clock"></i> Horário Fim</label>
+            <input type="time" id="agenda-data-fim" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agenda-dia"><i class="fas fa-calendar-day"></i> Dia da Semana</label>
+            <select id="agenda-dia" required>
+              <option value="SEG">Segunda-feira</option>
+              <option value="TER">Terça-feira</option>
+              <option value="QUA">Quarta-feira</option>
+              <option value="QUI">Quinta-feira</option>
+              <option value="SEX">Sexta-feira</option>
+              <option value="SAB">Sábado</option>
+              <option value="DOM">Domingo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Seção de clientes vinculados -->
+        <div id="clientes-section" style="display: none; margin-top: 20px;">
+          <h3><i class="fas fa-users"></i> Clientes Vinculados</h3>
+          <div id="clientes-list" class="clientes-list"></div>
+          
+          <div class="form-row" style="margin-top: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="cliente-select"><i class="fas fa-user-plus"></i> Adicionar Cliente</label>
+              <select id="cliente-select"></select>
+            </div>
+            <div class="form-group" style="align-self: flex-end;">
+              <button type="button" id="btn-vincular-cliente" class="btn btn-primary">
+                <i class="fas fa-link"></i> Vincular
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar
+          </button>
+          <button type="button" class="btn btn-secondary" id="btn-cancelar-agenda">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </form>
+
+      <!-- Lista de agendas -->
+      <div id="agendas-list" class="agendas-grid"></div>
+    </main>
+  </div>
+
+  <script src="../js/agenda.js"></script>
+</body>
+</html>

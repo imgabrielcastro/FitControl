@@ -18,6 +18,9 @@ app.use('/modalidades', modalidadesRouter);
 const instrutoresRouter = require('./routes/instrutores');
 app.use('/instrutores', instrutoresRouter);
 
+const agendaRouter = require('./routes/agenda');
+app.use('/agendas', agendaRouter); 
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
