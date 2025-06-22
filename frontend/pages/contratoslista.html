@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitControl - Contratos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/frontend/css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">FC</div>
+        <div class="brand-name">FitControl</div>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="lista_clientes.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="lista_instrutores.html" class="nav-link">
+            <i class="fas fa-dumbbell"></i>
+            <span>Instrutores</span>
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="contratoslista.html" class="nav-link">
+            <i class="fas fa-file-contract"></i>
+            <span>Contratos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="cadastro-modalidade.html" class="nav-link">
+            <i class="fas fa-running"></i>
+            <span>Modalidades</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="agenda.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="relatorios/clientes-modalidade.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      <div class="header">
+        <h1 class="page-title">
+          <i class="fas fa-file-contract"></i>
+          Contratos
+        </h1>
+        
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" placeholder="Pesquisar contrato por nome...">
+        </div>
+        
+        <div class="header-actions">
+          <button id="btn-novo-contrato" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Novo Contrato
+          </button>
+        </div>
+      </div>
+
+      <div class="clients-grid" id="contratos-list">
+        <!-- Os cards de contratos serão inseridos aqui via JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de Cadastro de Contrato -->
+  <div id="modal-cadastro" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Cadastrar Novo Contrato</h2>
+      <form id="form-cadastro-contrato">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nome">Nome do Contrato*</label>
+            <input type="text" id="nome" name="nome" required>
+          </div>
+          <div class="form-group">
+            <label for="valor">Valor Mensal (R$)*</label>
+            <input type="number" id="valor" name="valor" step="0.01" min="0" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="duracao_contrato">Duração (dias)</label>
+            <input type="number" id="duracao_contrato" name="duracao_contrato" min="1">
+            <small class="form-hint">Deixe em branco para contrato sem prazo</small>
+          </div>
+          <div class="form-group">
+            <label for="qtde_acesso_dia">Acessos por dia</label>
+            <input type="number" id="qtde_acesso_dia" name="qtde_acesso_dia" min="1">
+            <small class="form-hint">Deixe em branco para acessos ilimitados</small>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Salvar Contrato</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/frontend/js/contratos.js" defer></script>
+</body>
+</html>

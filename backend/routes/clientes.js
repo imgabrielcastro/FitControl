@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Rota para obter todos os clientes
+// Rota para obter todos os clientes (GET /clientes)
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(`
@@ -22,10 +22,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Rota para obter um cliente específico
-router.post('/', async (req, res) => {
-  console.log('Dados recebidos:', req.body); // Adicione esta linha para debug
-  const { id_cliente, ...data } = req.body;
+// Rota para obter um cliente específico (GET /clientes/:id)
+router.get('/:id', async (req, res) => {
   try {
     const result = await db.query(`
       SELECT c.*, 
@@ -49,7 +47,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Rota para criar/atualizar cliente
+// Rota para criar/atualizar cliente (POST /clientes)
 router.post('/', async (req, res) => {
   const { id_cliente, ...data } = req.body;
   
@@ -113,7 +111,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Rota para deletar cliente
+// Rota para deletar cliente (DELETE /clientes/:id)
 router.delete('/:id', async (req, res) => {
   try {
     const result = await db.query('DELETE FROM Cliente WHERE id_cliente = $1 RETURNING *', [req.params.id]);

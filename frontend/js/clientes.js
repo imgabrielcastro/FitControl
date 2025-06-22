@@ -176,6 +176,7 @@ async function carregarClientes() {
 
 async function editarCliente(id) {
   try {
+    // Corrigindo a URL para incluir a barra antes do id
     const res = await fetch(`http://localhost:3000/clientes/${id}`);
     if (!res.ok) throw new Error("Cliente não encontrado");
 
@@ -239,23 +240,30 @@ async function cadastrarCliente(event) {
   const rawData = Object.fromEntries(formData.entries());
   const isEdit = form.dataset.editId;
 
+  // Garantindo que os valores numéricos sejam tratados corretamente
   const data = {
     ...rawData,
     cpf: rawData.cpf.replace(/\D/g, ""),
     telefone: rawData.telefone?.replace(/\D/g, "") || null,
     cep: rawData.cep?.replace(/\D/g, "") || null,
     id_instrutor: rawData.id_instrutor ? parseInt(rawData.id_instrutor) : null,
-    id_contrato: parseInt(rawData.id_contrato),
+    id_contrato: rawData.id_contrato ? parseInt(rawData.id_contrato) : null, // Adicionado verificação
     data_nascimento: rawData.data_nascimento
       ? formatarDataParaBackend(rawData.data_nascimento)
       : null,
   };
 
+  // Verificação adicional para o contrato
+  if (!data.id_contrato) {
+    mostrarFeedback("Selecione um contrato válido", "error");
+    return;
+  }
+
   try {
     const res = await fetch("http://localhost:3000/clientes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(isEdit ? { id_cliente: isEdit, ...data } : data),
+      body: JSON.stringify(isEdit ? { id_cliente: parseInt(isEdit), ...data } : data),
     });
 
     const result = await res.json();
