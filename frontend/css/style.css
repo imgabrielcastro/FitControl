@@ -312,7 +312,7 @@ body {
 .btn-remove {
   background: rgba(255, 0, 0, 0.1);
   color: #ff4444;
-  flex: 1;
+  /* flex: 1; */
   justify-content: center;
 }
 
@@ -716,7 +716,7 @@ input:focus:invalid, select:focus:invalid {
   overflow-y: auto;
   border: 1px solid #eee;
   border-radius: 10px;
-  padding: 10px;
+  /* padding: 10px; */
   margin-top: 10px;
 }
 
@@ -772,4 +772,195 @@ input:focus:invalid, select:focus:invalid {
 .cliente-item button {
   padding: 5px 10px;
   font-size: 14px;
+}
+
+/* Adicionar no final do arquivo */
+
+/* Animação fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+  opacity: 0;
+}
+
+/* Estilos para o formulário de agenda */
+#form-agenda {
+  display: none;
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+  border: 1px solid #eee;
+}
+
+/* Estilos para clientes vinculados */
+.cliente-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cliente-item:last-child {
+  border-bottom: none;
+}
+
+.cliente-item button {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+/* Feedback mais visível */
+.feedback {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 5px;
+  color: white;
+  z-index: 10000;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.feedback.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feedback.success {
+  background-color: #4CAF50;
+}
+
+.feedback.error {
+  background-color: #f44336;
+}
+
+/* Estilos para mensagem sem resultados */
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.no-results i {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 20px;
+  display: block;
+}
+
+/* Melhorar exibição do formulário */
+.form-row {
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ======= CORREÇÕES PARA A SEÇÃO DE CLIENTES VINCULADOS ======= */
+
+/* 1. Estilização do container principal */
+.clientes-vinculados-container {
+  margin-top: 25px;
+  background: var(--card-bg);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.clientes-vinculados-container h3 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: var(--text);
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 2. Estilos para os itens da lista */
+.cliente-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: var(--transition);
+}
+
+.cliente-item:hover {
+  background-color: rgba(255, 111, 0, 0.05);
+}
+
+.cliente-item:last-child {
+  border-bottom: none;
+}
+
+/* 3. Estilização específica para o botão Desvincular */
+.btn-desvincular {
+  padding: 8px 15px;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-desvincular:hover {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.btn-desvincular i {
+  font-size: 14px;
+}
+
+/* 4. Melhorias no botão Adicionar Cliente */
+.btn-adicionar {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.btn-adicionar:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* 5. Ajuste na lista de clientes */
+.clientes-list {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: white;
 }

@@ -21,6 +21,32 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
+// Função para formatar horário
+function formatarHora(dataString) {
+  if (!dataString) return "";
+  
+  try {
+    // Se já estiver no formato HH:MM
+    if (typeof dataString === 'string' && dataString.match(/^\d{2}:\d{2}$/)) {
+      return dataString;
+    }
+    
+    // Se for um objeto Date ou string de data
+    const date = new Date(dataString);
+    
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+    
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  } catch (e) {
+    console.error("Erro ao formatar hora:", e);
+    return "";
+  }
+}
+
 // Função auxiliar para carregar recursos
 async function carregarRecurso(url, nome) {
   try {
@@ -33,11 +59,13 @@ async function carregarRecurso(url, nome) {
     
     const result = await response.json();
     
-    if (!result.success) {
+    if (result.success && Array.isArray(result.data)) {
+      return result.data;
+    } else if (Array.isArray(result)) {
+      return result;
+    } else {
       throw new Error(`Formato inesperado na resposta de ${nome}`);
     }
-    
-    return result.data || [];
   } catch (error) {
     console.error(`Erro ao carregar ${nome}:`, error);
     mostrarFeedback(`Erro ao carregar ${nome}: ${error.message}`, "error");
@@ -101,16 +129,12 @@ async function carregarAgendas(dia = currentDay) {
     
     const result = await response.json();
     
-    if (!result.success || !Array.isArray(result.data)) {
-      throw new Error('Resposta da API em formato inesperado');
-    }
-    
-    const agendas = result.data;
+    const agendas = result.success ? result.data : result;
     
     const container = document.getElementById("agendas-list");
     container.innerHTML = '';
     
-    if (agendas.length === 0) {
+    if (!agendas || agendas.length === 0) {
       container.innerHTML = `
         <div class="no-results" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
           <i class="fas fa-calendar-times" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
@@ -121,13 +145,14 @@ async function carregarAgendas(dia = currentDay) {
       return;
     }
     
-    agendas.forEach(agenda => {
-      // Extrair apenas o horário
-      const horaIni = agenda.data_ini ? new Date(agenda.data_ini).toTimeString().substring(0, 5) : '';
-      const horaFim = agenda.data_fim ? new Date(agenda.data_fim).toTimeString().substring(0, 5) : '';
+    agendas.forEach((agenda, index) => {
+      const horaIni = formatarHora(agenda.data_ini) || formatarHora(agenda.hora_ini);
+      const horaFim = formatarHora(agenda.data_fim) || formatarHora(agenda.hora_fim);
       
       const card = document.createElement('div');
-      card.className = 'agenda-card';
+      card.className = 'agenda-card fade-in';
+      card.style.animationDelay = `${0.1 * index}s`;
+      
       card.innerHTML = `
         <div class="agenda-header">
           <div class="agenda-title">${agenda.modalidade_nome}</div>
@@ -179,15 +204,20 @@ function abrirFormularioAgenda() {
   form.style.display = 'block';
   document.getElementById("clientes-section").style.display = 'none';
   document.getElementById("modal-agenda-title").textContent = "Nova Agenda";
-  document.getElementById("agenda-id").value = "";
+  
+  // Resetar formulário
   form.reset();
+  document.getElementById("agenda-id").value = "";
   document.getElementById("agenda-dia").value = currentDay;
+  
   currentAgendaId = null;
 }
 
-// Preencher formulário para edição
+// Preencher formulário para edição (CORREÇÃO PRINCIPAL)
 async function editarAgenda(id) {
   try {
+    console.log(`Iniciando edição da agenda ID: ${id}`);
+    
     const response = await fetch(`http://localhost:3000/agendas/${id}`);
     
     if (!response.ok) {
@@ -197,34 +227,45 @@ async function editarAgenda(id) {
     
     const result = await response.json();
     
-    if (!result.success || !result.data) {
-      throw new Error('Resposta da API em formato inesperado');
-    }
+    // Verificação robusta da resposta
+    const agenda = result.success ? result.data : 
+                  result.data ? result.data : 
+                  result;
     
-    const agenda = result.data;
+    console.log("Dados recebidos da API:", agenda);
     
     currentAgendaId = id;
     document.getElementById("agenda-id").value = id;
-    document.getElementById("agenda-modalidade").value = agenda.id_modalidade;
-    document.getElementById("agenda-instrutor").value = agenda.id_instrutor;
-    document.getElementById("agenda-descricao").value = agenda.descricao || '';
-    document.getElementById("agenda-qtde-max").value = agenda.qtde_max_cli;
-    document.getElementById("agenda-local").value = agenda.local;
     
-    // Extrair apenas o horário
-    const horaIni = agenda.hora_ini || (agenda.data_ini ? new Date(agenda.data_ini).toTimeString().substring(0, 5) : '');
-    const horaFim = agenda.hora_fim || (agenda.data_fim ? new Date(agenda.data_fim).toTimeString().substring(0, 5) : '');
+    // Preencher campos básicos
+    document.getElementById("agenda-modalidade").value = agenda.id_modalidade || "";
+    document.getElementById("agenda-instrutor").value = agenda.id_instrutor || "";
+    document.getElementById("agenda-descricao").value = agenda.descricao || "";
+    document.getElementById("agenda-qtde-max").value = agenda.qtde_max_cli || "";
+    document.getElementById("agenda-local").value = agenda.local || "";
+    document.getElementById("agenda-dia").value = agenda.diadasemana || currentDay;
+    
+    // Converter e preencher horários
+    const horaIni = formatarHora(agenda.hora_ini) || formatarHora(agenda.data_ini);
+    const horaFim = formatarHora(agenda.hora_fim) || formatarHora(agenda.data_fim);
+    
+    console.log(`Horário início: ${horaIni}, Horário fim: ${horaFim}`);
     
     document.getElementById("agenda-data-ini").value = horaIni;
     document.getElementById("agenda-data-fim").value = horaFim;
-    document.getElementById("agenda-dia").value = agenda.diadasemana;
     
-    // Mostrar seção de clientes
-    document.getElementById("clientes-section").style.display = 'block';
+    // Exibir formulário
+    document.getElementById("form-agenda").style.display = 'block';
     document.getElementById("modal-agenda-title").textContent = "Editar Agenda";
+    
+    // Exibir seção de clientes
+    document.getElementById("clientes-section").style.display = 'block';
     
     // Carregar clientes vinculados
     await carregarClientesVinculados(id);
+    
+    console.log("Formulário de edição preenchido com sucesso");
+    
   } catch (error) {
     console.error("Erro ao editar agenda:", error);
     mostrarFeedback("Erro ao editar agenda: " + error.message, "error");
@@ -243,16 +284,12 @@ async function carregarClientesVinculados(idAgenda) {
     
     const result = await response.json();
     
-    if (!result.success) {
-      throw new Error('Resposta da API em formato inesperado');
-    }
-    
-    const clientes = result.data || [];
+    const clientes = result.success ? result.data : result;
     
     const container = document.getElementById("clientes-list");
     container.innerHTML = '';
     
-    if (clientes.length === 0) {
+    if (!clientes || clientes.length === 0) {
       container.innerHTML = '<p>Nenhum cliente vinculado</p>';
       return;
     }
@@ -282,13 +319,12 @@ async function carregarClientesVinculados(idAgenda) {
 // Vincular cliente
 async function vincularCliente() {
   const idAgenda = document.getElementById("agenda-id").value;
+  const idCliente = document.getElementById("cliente-select").value;
   
   if (!idAgenda) {
-    mostrarFeedback('Primeiro selecione ou crie uma agenda', 'error');
+    mostrarFeedback('Primeiro selecione uma agenda para editar', 'error');
     return;
   }
-  
-  const idCliente = document.getElementById("cliente-select").value;
   
   if (!idCliente) {
     mostrarFeedback('Selecione um cliente', 'error');
@@ -302,9 +338,10 @@ async function vincularCliente() {
       body: JSON.stringify({ id_cliente: idCliente })
     });
     
+    const result = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao vincular cliente');
+      throw new Error(result.message || 'Erro ao vincular cliente');
     }
     
     mostrarFeedback('Cliente vinculado com sucesso', 'success');
@@ -323,9 +360,10 @@ async function desvincularCliente(idAgenda, idCliente) {
       method: 'DELETE'
     });
     
+    const result = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao desvincular cliente');
+      throw new Error(result.message || 'Erro ao desvincular cliente');
     }
     
     mostrarFeedback('Cliente desvinculado com sucesso', 'success');
@@ -365,27 +403,30 @@ async function salvarAgenda(event) {
     }
   }
   
+  // Se estamos editando, incluir o ID
+  if (id) {
+    data.id_agenda = id;
+  }
+  
   try {
-    const url = id ? `http://localhost:3000/agendas/${id}` : 'http://localhost:3000/agendas';
-    const method = id ? 'PUT' : 'POST';
-    
-    const response = await fetch(url, {
-      method,
+    const response = await fetch('http://localhost:3000/agendas', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     
+    const result = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Erro ao salvar agenda');
+      throw new Error(result.message || 'Erro ao salvar agenda');
     }
     
-    mostrarFeedback(id ? 'Agenda atualizada com sucesso' : 'Agenda criada com sucesso', 'success');
+    mostrarFeedback(result.message, 'success');
     fecharModalAgenda();
     await carregarAgendas();
   } catch (error) {
     console.error('Erro ao salvar agenda:', error);
-    mostrarFeedback(error.message || 'Erro ao salvar agenda', 'error');
+    mostrarFeedback('Erro ao salvar agenda: ' + error.message, 'error');
   }
 }
 
@@ -398,9 +439,10 @@ async function excluirAgenda(id) {
       method: 'DELETE'
     });
     
+    const result = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Erro ao excluir agenda');
+      throw new Error(result.message || 'Erro ao excluir agenda');
     }
     
     mostrarFeedback('Agenda excluída com sucesso', 'success');

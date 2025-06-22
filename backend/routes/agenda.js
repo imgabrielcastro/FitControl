@@ -43,11 +43,12 @@ router.get('/', async (req, res) => {
       JOIN modalidade m ON a.id_modalidade = m.id_modalidade
       JOIN instrutor i ON a.id_instrutor = i.id_instrutor
       LEFT JOIN cliente_agenda ca ON a.id_agenda = ca.id_agenda
+      WHERE a.ativo = true
     `;
 
     const params = [];
     if (dia) {
-      query += ' WHERE a.diadasemana = $1';
+      query += ' AND a.diadasemana = $1';
       params.push(dia);
     }
 
@@ -85,7 +86,7 @@ router.get('/:id', async (req, res) => {
       FROM agenda a
       JOIN modalidade m ON a.id_modalidade = m.id_modalidade
       JOIN instrutor i ON a.id_instrutor = i.id_instrutor
-      WHERE a.id_agenda = $1
+      WHERE a.id_agenda = $1 AND a.ativo = true
     `, [id]);
 
     if (result.rows.length === 0) {
@@ -110,9 +111,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Cadastrar nova agenda
+// Cadastrar/Atualizar agenda
 router.post('/', async (req, res) => {
   const { 
+    id_agenda,
     id_modalidade, 
     id_instrutor, 
     descricao, 
@@ -126,119 +128,96 @@ router.post('/', async (req, res) => {
   try {
     const inicioTimestamp = timeToTimestamp(data_ini);
     const fimTimestamp = timeToTimestamp(data_fim);
-
-    const result = await db.query(
-      `INSERT INTO agenda (
-        id_modalidade, 
-        id_instrutor, 
-        descricao, 
-        qtde_max_cli, 
-        local, 
-        data_ini, 
-        data_fim, 
-        diadasemana
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *`,
-      [
-        id_modalidade, 
-        id_instrutor, 
-        descricao, 
-        qtde_max_cli, 
-        local, 
-        inicioTimestamp, 
-        fimTimestamp, 
-        diadasemana
-      ]
-    );
-
-    res.status(201).json({
-      success: true,
-      data: result.rows[0],
-      message: 'Agenda criada com sucesso'
-    });
-  } catch (err) {
-    console.error('Erro ao criar agenda:', err);
-    res.status(500).json({ 
-      success: false,
-      message: 'Erro ao criar agenda',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
-  }
-});
-
-// Atualizar agenda
-router.put('/:id', async (req, res) => {
-  const { id } = req.params;
-  const { 
-    id_modalidade, 
-    id_instrutor, 
-    descricao, 
-    qtde_max_cli, 
-    local, 
-    data_ini, 
-    data_fim, 
-    diadasemana 
-  } = req.body;
-
-  try {
-    const inicioTimestamp = timeToTimestamp(data_ini);
-    const fimTimestamp = timeToTimestamp(data_fim);
-
-    const result = await db.query(
-      `UPDATE agenda SET
-        id_modalidade = $1,
-        id_instrutor = $2,
-        descricao = $3,
-        qtde_max_cli = $4,
-        local = $5,
-        data_ini = $6,
-        data_fim = $7,
-        diadasemana = $8,
-        data_atualizacao = CURRENT_TIMESTAMP
-      WHERE id_agenda = $9
-      RETURNING *`,
-      [
-        id_modalidade, 
-        id_instrutor, 
-        descricao, 
-        qtde_max_cli, 
-        local, 
-        inicioTimestamp, 
-        fimTimestamp, 
-        diadasemana,
-        id
-      ]
-    );
+    
+    let result;
+    
+    if (id_agenda) {
+      // Atualização
+      result = await db.query(
+        `UPDATE agenda SET
+          id_modalidade = $1,
+          id_instrutor = $2,
+          descricao = $3,
+          qtde_max_cli = $4,
+          local = $5,
+          data_ini = $6,
+          data_fim = $7,
+          diadasemana = $8,
+          data_atualizacao = CURRENT_TIMESTAMP
+        WHERE id_agenda = $9
+        RETURNING *`,
+        [
+          id_modalidade, 
+          id_instrutor, 
+          descricao, 
+          qtde_max_cli, 
+          local, 
+          inicioTimestamp, 
+          fimTimestamp, 
+          diadasemana,
+          id_agenda
+        ]
+      );
+    } else {
+      // Criação
+      result = await db.query(
+        `INSERT INTO agenda (
+          id_modalidade, 
+          id_instrutor, 
+          descricao, 
+          qtde_max_cli, 
+          local, 
+          data_ini, 
+          data_fim, 
+          diadasemana
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *`,
+        [
+          id_modalidade, 
+          id_instrutor, 
+          descricao, 
+          qtde_max_cli, 
+          local, 
+          inicioTimestamp, 
+          fimTimestamp, 
+          diadasemana
+        ]
+      );
+    }
 
     if (result.rows.length === 0) {
       return res.status(404).json({ 
         success: false,
-        message: 'Agenda não encontrada' 
+        message: 'Operação não realizada' 
       });
     }
 
     res.json({
       success: true,
       data: result.rows[0],
-      message: 'Agenda atualizada com sucesso'
+      message: id_agenda 
+        ? 'Agenda atualizada com sucesso' 
+        : 'Agenda criada com sucesso'
     });
   } catch (err) {
-    console.error('Erro ao atualizar agenda:', err);
+    console.error('Erro ao salvar agenda:', err);
     res.status(500).json({ 
       success: false,
-      message: 'Erro ao atualizar agenda',
+      message: 'Erro ao salvar agenda',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 });
 
-// Excluir agenda
+// Desativar agenda
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM cliente_agenda WHERE id_agenda = $1', [id]);
-    const result = await db.query('DELETE FROM agenda WHERE id_agenda = $1 RETURNING *', [id]);
+    const result = await db.query(
+      'UPDATE agenda SET ativo = false WHERE id_agenda = $1 RETURNING *',
+      [id]
+    );
     
     if (result.rows.length === 0) {
       return res.status(404).json({ 
@@ -249,13 +228,13 @@ router.delete('/:id', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Agenda excluída com sucesso'
+      message: 'Agenda desativada com sucesso'
     });
   } catch (err) {
-    console.error('Erro ao excluir agenda:', err);
+    console.error('Erro ao desativar agenda:', err);
     res.status(500).json({ 
       success: false,
-      message: 'Erro ao excluir agenda',
+      message: 'Erro ao desativar agenda',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
@@ -274,7 +253,7 @@ router.get('/:id/clientes', async (req, res) => {
         c.email
       FROM cliente c
       JOIN cliente_agenda ca ON c.id_cliente = ca.id_cliente
-      WHERE ca.id_agenda = $1
+      WHERE ca.id_agenda = $1 AND c.ativo = true
     `, [id]);
 
     res.json({
@@ -305,7 +284,7 @@ router.post('/:id/clientes', async (req, res) => {
       [id, id_cliente]
     );
 
-    res.status(201).json({
+    res.json({
       success: true,
       message: 'Cliente vinculado com sucesso'
     });
@@ -350,6 +329,7 @@ router.get('/clientes/disponiveis', async (req, res) => {
     const result = await db.query(`
       SELECT id_cliente, nome, cpf, email 
       FROM cliente 
+      WHERE ativo = true
       ORDER BY nome
     `);
 
