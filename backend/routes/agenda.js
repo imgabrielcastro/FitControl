@@ -253,7 +253,7 @@ router.get('/:id/clientes', async (req, res) => {
         c.email
       FROM cliente c
       JOIN cliente_agenda ca ON c.id_cliente = ca.id_cliente
-      WHERE ca.id_agenda = $1 AND c.ativo = true
+      WHERE ca.id_agenda = $1 AND c.situacao = true
     `, [id]);
 
     res.json({
@@ -329,7 +329,7 @@ router.get('/clientes/disponiveis', async (req, res) => {
     const result = await db.query(`
       SELECT id_cliente, nome, cpf, email 
       FROM cliente 
-      WHERE ativo = true
+      WHERE situacao = true
       ORDER BY nome
     `);
 
