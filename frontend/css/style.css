@@ -517,7 +517,7 @@ input:focus:invalid, select:focus:invalid {
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
-  z-index: 10000; /* Garantir que fique acima de tudo */
+  z-index: 10000;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
@@ -579,6 +579,7 @@ input:focus:invalid, select:focus:invalid {
   margin-bottom: 30px;
   box-shadow: var(--shadow);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  display: none; /* Inicialmente oculto */
 }
 
 .week-tabs {
@@ -746,16 +747,29 @@ input:focus:invalid, select:focus:invalid {
 }
 
 /* Container do formulário */
-.agenda-form {
-  background: var(--card-bg);
-  border-radius: 15px;
-  padding: 30px;
-  margin-bottom: 30px;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: none;
-}
-
 .agenda-form.visible {
   display: block;
+}
+
+/* Botões do formulário */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+}
+
+.cliente-item button {
+  padding: 5px 10px;
+  font-size: 14px;
 }

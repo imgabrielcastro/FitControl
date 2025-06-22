@@ -33,11 +33,11 @@ async function carregarRecurso(url, nome) {
     
     const result = await response.json();
     
-    if (!result.success || !Array.isArray(result.data)) {
+    if (!result.success) {
       throw new Error(`Formato inesperado na resposta de ${nome}`);
     }
     
-    return result.data;
+    return result.data || [];
   } catch (error) {
     console.error(`Erro ao carregar ${nome}:`, error);
     mostrarFeedback(`Erro ao carregar ${nome}: ${error.message}`, "error");
@@ -144,7 +144,7 @@ async function carregarAgendas(dia = currentDay) {
           </div>
           <div class="agenda-detail-item">
             <span class="agenda-detail-label">Vagas:</span>
-            <span class="agenda-detail-value">${agenda.qtde_max_cli}</span>
+            <span class="agenda-detail-value">${agenda.clientes_vinculados} / ${agenda.qtde_max_cli}</span>
           </div>
         </div>
         <div class="agenda-actions">
@@ -179,6 +179,7 @@ function abrirFormularioAgenda() {
   form.style.display = 'block';
   document.getElementById("clientes-section").style.display = 'none';
   document.getElementById("modal-agenda-title").textContent = "Nova Agenda";
+  document.getElementById("agenda-id").value = "";
   form.reset();
   document.getElementById("agenda-dia").value = currentDay;
   currentAgendaId = null;
@@ -242,11 +243,11 @@ async function carregarClientesVinculados(idAgenda) {
     
     const result = await response.json();
     
-    if (!result.success || !Array.isArray(result.data)) {
+    if (!result.success) {
       throw new Error('Resposta da API em formato inesperado');
     }
     
-    const clientes = result.data;
+    const clientes = result.data || [];
     
     const container = document.getElementById("clientes-list");
     container.innerHTML = '';
@@ -281,6 +282,12 @@ async function carregarClientesVinculados(idAgenda) {
 // Vincular cliente
 async function vincularCliente() {
   const idAgenda = document.getElementById("agenda-id").value;
+  
+  if (!idAgenda) {
+    mostrarFeedback('Primeiro selecione ou crie uma agenda', 'error');
+    return;
+  }
+  
   const idCliente = document.getElementById("cliente-select").value;
   
   if (!idCliente) {
@@ -289,33 +296,43 @@ async function vincularCliente() {
   }
   
   try {
-    await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes`, {
+    const response = await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id_cliente: idCliente })
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao vincular cliente');
+    }
     
     mostrarFeedback('Cliente vinculado com sucesso', 'success');
     await carregarClientesVinculados(idAgenda);
     document.getElementById("cliente-select").value = '';
   } catch (error) {
     console.error('Erro ao vincular cliente:', error);
-    mostrarFeedback('Erro ao vincular cliente', 'error');
+    mostrarFeedback('Erro ao vincular cliente: ' + error.message, 'error');
   }
 }
 
 // Desvincular cliente
 async function desvincularCliente(idAgenda, idCliente) {
   try {
-    await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes/${idCliente}`, {
+    const response = await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes/${idCliente}`, {
       method: 'DELETE'
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao desvincular cliente');
+    }
     
     mostrarFeedback('Cliente desvinculado com sucesso', 'success');
     await carregarClientesVinculados(idAgenda);
   } catch (error) {
     console.error('Erro ao desvincular cliente:', error);
-    mostrarFeedback('Erro ao desvincular cliente', 'error');
+    mostrarFeedback('Erro ao desvincular cliente: ' + error.message, 'error');
   }
 }
 
@@ -338,12 +355,14 @@ async function salvarAgenda(event) {
   };
   
   // Validar horários
-  const horaIni = new Date(`1970-01-01T${data.data_ini}:00`);
-  const horaFim = new Date(`1970-01-01T${data.data_fim}:00`);
-  
-  if (horaFim <= horaIni) {
-    mostrarFeedback('O horário final deve ser após o inicial', 'error');
-    return;
+  if (data.data_ini && data.data_fim) {
+    const horaIni = new Date(`1970-01-01T${data.data_ini}:00`);
+    const horaFim = new Date(`1970-01-01T${data.data_fim}:00`);
+    
+    if (horaFim <= horaIni) {
+      mostrarFeedback('O horário final deve ser após o inicial', 'error');
+      return;
+    }
   }
   
   try {
@@ -375,20 +394,25 @@ async function excluirAgenda(id) {
   if (!confirm('Tem certeza que deseja excluir esta agenda?')) return;
   
   try {
-    await fetch(`http://localhost:3000/agendas/${id}`, {
+    const response = await fetch(`http://localhost:3000/agendas/${id}`, {
       method: 'DELETE'
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao excluir agenda');
+    }
     
     mostrarFeedback('Agenda excluída com sucesso', 'success');
     await carregarAgendas();
   } catch (error) {
     console.error('Erro ao excluir agenda:', error);
-    mostrarFeedback('Erro ao excluir agenda', 'error');
+    mostrarFeedback('Erro ao excluir agenda: ' + error.message, 'error');
   }
 }
 
 function fecharModalAgenda() {
-  document.getElementById('modal-agenda').style.display = 'none';
+  document.getElementById('form-agenda').style.display = 'none';
 }
 
 // Inicialização
