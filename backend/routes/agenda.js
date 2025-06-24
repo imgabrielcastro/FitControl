@@ -8,6 +8,109 @@ router.use((req, res, next) => {
   next();
 });
 
+router.post('/:id/clientes', async (req, res) => {
+  const { id } = req.params;
+  const { id_cliente } = req.body;
+
+  try {
+    // Obter dados completos da agenda
+    const agendaResult = await db.query(`
+      SELECT a.qtde_max_cli, COUNT(ca.id_cliente) as inscritos
+      FROM agenda a
+      LEFT JOIN cliente_agenda ca ON a.id_agenda = ca.id_agenda AND ca.ativo = true
+      WHERE a.id_agenda = $1 AND a.ativo = true
+      GROUP BY a.id_agenda
+    `, [id]);
+
+    if (agendaResult.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Agenda não encontrada ou desativada'
+      });
+    }
+
+    const agenda = agendaResult.rows[0];
+
+    // Verificar se há vagas disponíveis
+    if (agenda.inscritos >= agenda.qtde_max_cli) {
+      return res.status(400).json({
+        success: false,
+        message: `Agenda cheia. Limite de ${agenda.qtde_max_cli} alunos atingido.`
+      });
+    }
+
+    // Verificar se o cliente já está vinculado
+    const clienteCheck = await db.query(
+      'SELECT 1 FROM cliente_agenda WHERE id_agenda = $1 AND id_cliente = $2 AND ativo = true',
+      [id, id_cliente]
+    );
+    
+    if (clienteCheck.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cliente já está vinculado a esta agenda'
+      });
+    }
+
+    // Se tudo ok, vincular o cliente
+    await db.query(
+      `INSERT INTO cliente_agenda (id_agenda, id_cliente)
+       VALUES ($1, $2)`,
+      [id, id_cliente]
+    );
+
+    res.json({
+      success: true,
+      message: 'Cliente vinculado com sucesso'
+    });
+  } catch (err) {
+    console.error('Erro ao vincular cliente:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao vincular cliente',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// Remover todos os clientes de uma agenda
+router.delete('/:id/clientes', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Verificar se a agenda existe
+    const agendaCheck = await db.query(
+      'SELECT 1 FROM agenda WHERE id_agenda = $1 AND ativo = true',
+      [id]
+    );
+    
+    if (agendaCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Agenda não encontrada ou desativada'
+      });
+    }
+
+    // Remover todos os clientes vinculados
+    await db.query(
+      'DELETE FROM cliente_agenda WHERE id_agenda = $1',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Todos os clientes foram removidos da agenda'
+    });
+  } catch (err) {
+    console.error('Erro ao remover clientes:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao remover clientes',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
 // Helper para converter time string para timestamp
 const timeToTimestamp = (timeStr) => {
   if (!timeStr) return null;
@@ -277,10 +380,35 @@ router.post('/:id/clientes', async (req, res) => {
   const { id_cliente } = req.body;
 
   try {
+    // Verificar se a agenda existe e está ativa
+    const agendaCheck = await db.query(
+      'SELECT ativo FROM agenda WHERE id_agenda = $1',
+      [id]
+    );
+    
+    if (agendaCheck.rows.length === 0 || !agendaCheck.rows[0].ativo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Agenda não encontrada ou desativada'
+      });
+    }
+
+    // Verificar se o cliente já está vinculado
+    const clienteCheck = await db.query(
+      'SELECT 1 FROM cliente_agenda WHERE id_agenda = $1 AND id_cliente = $2 AND ativo = true',
+      [id, id_cliente]
+    );
+    
+    if (clienteCheck.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cliente já está vinculado a esta agenda'
+      });
+    }
+
     await db.query(
       `INSERT INTO cliente_agenda (id_agenda, id_cliente)
-       VALUES ($1, $2)
-       ON CONFLICT (id_agenda, id_cliente) DO NOTHING`,
+       VALUES ($1, $2)`,
       [id, id_cliente]
     );
 
@@ -290,6 +418,15 @@ router.post('/:id/clientes', async (req, res) => {
     });
   } catch (err) {
     console.error('Erro ao vincular cliente:', err);
+    
+    // Tratar especificamente o erro de agenda cheia
+    if (err.message && err.message.includes('Agenda cheia')) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Esta agenda já está cheia. Limite de alunos atingido.'
+      });
+    }
+    
     res.status(500).json({ 
       success: false,
       message: 'Erro ao vincular cliente',

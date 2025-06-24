@@ -9,7 +9,18 @@ router.get('/', async (req, res) => {
       SELECT c.*, 
              i.nome as instrutor_nome,
              ct.nome as contrato_nome,
-             ct.valor as contrato_valor
+             ct.valor as contrato_valor,
+             ct.duracao_contrato,
+             CASE 
+               WHEN c.data_inicio_contrato IS NOT NULL AND ct.duracao_contrato IS NOT NULL 
+               THEN (c.data_inicio_contrato + (ct.duracao_contrato * INTERVAL '1 day'))::date
+               ELSE NULL
+             END as data_fim_contrato,
+             CASE 
+               WHEN c.data_inicio_contrato IS NOT NULL AND ct.duracao_contrato IS NOT NULL 
+               THEN (c.data_inicio_contrato + (ct.duracao_contrato * INTERVAL '1 day'))::date - CURRENT_DATE
+               ELSE NULL
+             END as dias_restantes
       FROM Cliente c
       LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
       LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
@@ -19,31 +30,6 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error('Erro ao buscar clientes:', err);
     res.status(500).json({ success: false, message: 'Erro ao buscar clientes' });
-  }
-});
-
-// Rota para obter um cliente específico (GET /clientes/:id)
-router.get('/:id', async (req, res) => {
-  try {
-    const result = await db.query(`
-      SELECT c.*, 
-             i.nome as instrutor_nome,
-             ct.nome as contrato_nome,
-             ct.valor as contrato_valor
-      FROM Cliente c
-      LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
-      LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
-      WHERE c.id_cliente = $1
-    `, [req.params.id]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
-    }
-    
-    res.json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    console.error('Erro ao buscar cliente:', err);
-    res.status(500).json({ success: false, message: 'Erro ao buscar cliente' });
   }
 });
 

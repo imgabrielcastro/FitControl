@@ -83,7 +83,6 @@ async function carregarContratos() {
   }
 }
 
-// CRUD Clientes
 async function carregarClientes() {
   try {
     console.log('Iniciando carregamento de clientes...');
@@ -123,6 +122,18 @@ async function carregarClientes() {
       card.className = "client-card fade-in";
       card.style.animationDelay = `${0.1 * index}s`;
 
+      // Calcular dias restantes (se houver contrato com duração)
+      let diasRestantesInfo = '';
+      if (cliente.dias_restantes !== undefined && cliente.dias_restantes !== null) {
+        const diasRestantes = Math.floor(cliente.dias_restantes);
+        const statusClass = diasRestantes <= 0 ? 'vencido' : (diasRestantes <= 7 ? 'prestes-a-vencer' : 'ativo');
+        diasRestantesInfo = `
+          <div class="dias-restantes ${statusClass}">
+            ${diasRestantes <= 0 ? 'Vencido' : `${diasRestantes} dias restantes`}
+          </div>
+        `;
+      }
+
       card.innerHTML = `
         <div class="client-header">
           <div class="client-avatar">${cliente.nome?.charAt(0)?.toUpperCase() || 'C'}</div>
@@ -145,6 +156,7 @@ async function carregarClientes() {
         <div class="contract-info">
           <div class="contract-name">${cliente.contrato_nome || 'Contrato não informado'}</div>
           <div class="contract-value">R$ ${formatarValor(cliente.contrato_valor) || '0,00'}</div>
+          ${diasRestantesInfo}
         </div>
         <div class="client-actions">
           <button class="btn btn-edit" onclick="editarCliente(${cliente.id_cliente})">

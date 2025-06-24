@@ -1128,3 +1128,83 @@ tr:hover {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-danger i {
+  margin-right: 5px;
+}
+
+/* Adicione ao seu arquivo CSS */
+.dias-restantes {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.dias-restantes.ativo {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.dias-restantes.prestes-a-vencer {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.dias-restantes.vencido {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.contract-info {
+  position: relative;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.contract-days {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.contract-days.remaining {
+  background-color: #e6f7e6;
+  color: #2e7d32;
+}
+
+.contract-days.expiring {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.contract-days.expired {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.contract-days.unknown {
+  background-color: #f5f5f5;
+  color: #616161;
+}
