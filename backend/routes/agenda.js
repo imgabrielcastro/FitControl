@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Middleware para garantir respostas JSON
 router.use((req, res, next) => {
   res.setHeader('Content-Type', 'application/json');
   next();
@@ -13,7 +12,6 @@ router.post('/:id/clientes', async (req, res) => {
   const { id_cliente } = req.body;
 
   try {
-    // Obter dados completos da agenda
     const agendaResult = await db.query(`
       SELECT a.qtde_max_cli, COUNT(ca.id_cliente) as inscritos
       FROM agenda a
@@ -31,7 +29,6 @@ router.post('/:id/clientes', async (req, res) => {
 
     const agenda = agendaResult.rows[0];
 
-    // Verificar se há vagas disponíveis
     if (agenda.inscritos >= agenda.qtde_max_cli) {
       return res.status(400).json({
         success: false,
@@ -39,7 +36,6 @@ router.post('/:id/clientes', async (req, res) => {
       });
     }
 
-    // Verificar se o cliente já está vinculado
     const clienteCheck = await db.query(
       'SELECT 1 FROM cliente_agenda WHERE id_agenda = $1 AND id_cliente = $2 AND ativo = true',
       [id, id_cliente]
@@ -52,7 +48,6 @@ router.post('/:id/clientes', async (req, res) => {
       });
     }
 
-    // Se tudo ok, vincular o cliente
     await db.query(
       `INSERT INTO cliente_agenda (id_agenda, id_cliente)
        VALUES ($1, $2)`,
@@ -73,12 +68,10 @@ router.post('/:id/clientes', async (req, res) => {
   }
 });
 
-// Remover todos os clientes de uma agenda
 router.delete('/:id/clientes', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Verificar se a agenda existe
     const agendaCheck = await db.query(
       'SELECT 1 FROM agenda WHERE id_agenda = $1 AND ativo = true',
       [id]
@@ -91,7 +84,6 @@ router.delete('/:id/clientes', async (req, res) => {
       });
     }
 
-    // Remover todos os clientes vinculados
     await db.query(
       'DELETE FROM cliente_agenda WHERE id_agenda = $1',
       [id]
@@ -111,7 +103,6 @@ router.delete('/:id/clientes', async (req, res) => {
   }
 });
 
-// Helper para converter time string para timestamp
 const timeToTimestamp = (timeStr) => {
   if (!timeStr) return null;
   const [hours, minutes] = timeStr.split(':');
@@ -120,7 +111,6 @@ const timeToTimestamp = (timeStr) => {
   return date;
 };
 
-// Listar agendas por dia
 router.get('/', async (req, res) => {
   const { dia } = req.query;
   
@@ -174,7 +164,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obter uma agenda por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -214,7 +203,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Cadastrar/Atualizar agenda
 router.post('/', async (req, res) => {
   const { 
     id_agenda,
@@ -235,7 +223,6 @@ router.post('/', async (req, res) => {
     let result;
     
     if (id_agenda) {
-      // Atualização
       result = await db.query(
         `UPDATE agenda SET
           id_modalidade = $1,
@@ -262,7 +249,6 @@ router.post('/', async (req, res) => {
         ]
       );
     } else {
-      // Criação
       result = await db.query(
         `INSERT INTO agenda (
           id_modalidade, 
@@ -312,7 +298,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Desativar agenda
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -343,7 +328,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Listar clientes vinculados
 router.get('/:id/clientes', async (req, res) => {
   const { id } = req.params;
 
@@ -374,13 +358,11 @@ router.get('/:id/clientes', async (req, res) => {
   }
 });
 
-// Vincular cliente a agenda
 router.post('/:id/clientes', async (req, res) => {
   const { id } = req.params;
   const { id_cliente } = req.body;
 
   try {
-    // Verificar se a agenda existe e está ativa
     const agendaCheck = await db.query(
       'SELECT ativo FROM agenda WHERE id_agenda = $1',
       [id]
@@ -393,7 +375,6 @@ router.post('/:id/clientes', async (req, res) => {
       });
     }
 
-    // Verificar se o cliente já está vinculado
     const clienteCheck = await db.query(
       'SELECT 1 FROM cliente_agenda WHERE id_agenda = $1 AND id_cliente = $2 AND ativo = true',
       [id, id_cliente]
@@ -419,7 +400,6 @@ router.post('/:id/clientes', async (req, res) => {
   } catch (err) {
     console.error('Erro ao vincular cliente:', err);
     
-    // Tratar especificamente o erro de agenda cheia
     if (err.message && err.message.includes('Agenda cheia')) {
       return res.status(400).json({ 
         success: false,
@@ -435,7 +415,6 @@ router.post('/:id/clientes', async (req, res) => {
   }
 });
 
-// Desvincular cliente de agenda
 router.delete('/:id_agenda/clientes/:id_cliente', async (req, res) => {
   const { id_agenda, id_cliente } = req.params;
 
@@ -460,7 +439,6 @@ router.delete('/:id_agenda/clientes/:id_cliente', async (req, res) => {
   }
 });
 
-// Listar clientes disponíveis para vincular
 router.get('/clientes/disponiveis', async (req, res) => {
   try {
     const result = await db.query(`

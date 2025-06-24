@@ -1,4 +1,3 @@
-// Funções auxiliares
 function formatarCPF(cpf) {
   if (!cpf) return "";
   const numeros = cpf.replace(/\D/g, "");
@@ -13,24 +12,21 @@ function formatarValor(valor) {
 
 function formatarDataParaBackend(dataString) {
   if (!dataString) return null;
-  
-  // Verifica se a data já está no formato backend (YYYY-MM-DD)
+
   if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
     return dataString;
   }
-  
-  // Verifica se está no formato DD/MM/YYYY
-  if (typeof dataString === 'string' && dataString.includes('/')) {
-    const [day, month, year] = dataString.split('/');
+
+  if (typeof dataString === "string" && dataString.includes("/")) {
+    const [day, month, year] = dataString.split("/");
     if (day && month && year) {
       return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     }
   }
-  
+
   return null;
 }
 
-// Modal
 function abrirModal(edicao = false) {
   const modal = document.getElementById("modal-cadastro");
   const modalTitle = document.querySelector("#modal-cadastro h2");
@@ -56,7 +52,6 @@ function fecharModal() {
   submitButton.textContent = "Cadastrar Cliente";
 }
 
-// Carregamento de dados
 async function carregarInstrutores() {
   try {
     const res = await fetch("http://localhost:3000/instrutores");
@@ -98,26 +93,26 @@ async function carregarContratos() {
 
 async function carregarClientes() {
   try {
-    console.log('Iniciando carregamento de clientes...');
+    console.log("Iniciando carregamento de clientes...");
     const res = await fetch("http://localhost:3000/clientes");
-    console.log('Resposta da API:', res);
-    
+    console.log("Resposta da API:", res);
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      console.log('Erro detalhado:', errorData);
+      console.log("Erro detalhado:", errorData);
       throw new Error(errorData.message || `Erro HTTP: ${res.status}`);
     }
 
     let clientes = await res.json();
-    console.log('Dados recebidos:', clientes);
+    console.log("Dados recebidos:", clientes);
 
-    clientes.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    clientes.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
     const clientsGrid = document.getElementById("clientes-list");
     if (!clientsGrid) {
-      throw new Error('Elemento clientes-list não encontrado no DOM');
+      throw new Error("Elemento clientes-list não encontrado no DOM");
     }
-    
+
     clientsGrid.innerHTML = "";
 
     if (clientes.length === 0) {
@@ -135,7 +130,6 @@ async function carregarClientes() {
       card.className = "client-card fade-in";
       card.style.animationDelay = `${0.1 * index}s`;
 
-      // Adicionando lógica para mostrar dias restantes
       let statusContrato = "";
       if (cliente.dias_restantes !== null) {
         if (cliente.dias_restantes > 0) {
@@ -143,7 +137,9 @@ async function carregarClientes() {
         } else if (cliente.dias_restantes === 0) {
           statusContrato = `<div class="contract-days expiring">Último dia</div>`;
         } else {
-          statusContrato = `<div class="contract-days expired">Expirado há ${Math.abs(cliente.dias_restantes)} dias</div>`;
+          statusContrato = `<div class="contract-days expired">Expirado há ${Math.abs(
+            cliente.dias_restantes
+          )} dias</div>`;
         }
       } else {
         statusContrato = `<div class="contract-days unknown">Duração não definida</div>`;
@@ -151,13 +147,17 @@ async function carregarClientes() {
 
       card.innerHTML = `
         <div class="client-header">
-          <div class="client-avatar">${cliente.nome?.charAt(0)?.toUpperCase() || 'C'}</div>
-          <div class="client-name">${cliente.nome || 'Cliente sem nome'}</div>
+          <div class="client-avatar">${
+            cliente.nome?.charAt(0)?.toUpperCase() || "C"
+          }</div>
+          <div class="client-name">${cliente.nome || "Cliente sem nome"}</div>
         </div>
         <div class="client-details">
           <div class="detail-item">
             <div class="detail-label">CPF:</div>
-            <div class="detail-value">${formatarCPF(cliente.cpf) || 'Não informado'}</div>
+            <div class="detail-value">${
+              formatarCPF(cliente.cpf) || "Não informado"
+            }</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Email:</div>
@@ -165,19 +165,29 @@ async function carregarClientes() {
           </div>
           <div class="detail-item">
             <div class="detail-label">Instrutor:</div>
-            <div class="detail-value">${cliente.instrutor_nome || "Não atribuído"}</div>
+            <div class="detail-value">${
+              cliente.instrutor_nome || "Não atribuído"
+            }</div>
           </div>
         </div>
         <div class="contract-info">
-          <div class="contract-name">${cliente.contrato_nome || 'Contrato não informado'}</div>
-          <div class="contract-value">R$ ${formatarValor(cliente.contrato_valor) || '0,00'}</div>
+          <div class="contract-name">${
+            cliente.contrato_nome || "Contrato não informado"
+          }</div>
+          <div class="contract-value">R$ ${
+            formatarValor(cliente.contrato_valor) || "0,00"
+          }</div>
           ${statusContrato}
         </div>
         <div class="client-actions">
-          <button class="btn btn-edit" onclick="editarCliente(${cliente.id_cliente})">
+          <button class="btn btn-edit" onclick="editarCliente(${
+            cliente.id_cliente
+          })">
             <i class="fas fa-edit"></i> Editar
           </button>
-          <button class="btn btn-remove" onclick="removerCliente(${cliente.id_cliente})">
+          <button class="btn btn-remove" onclick="removerCliente(${
+            cliente.id_cliente
+          })">
             <i class="fas fa-trash"></i> Remover
           </button>
         </div>
@@ -188,7 +198,7 @@ async function carregarClientes() {
   } catch (error) {
     console.error("Erro ao carregar clientes:", error);
     mostrarFeedback("Erro ao carregar lista de clientes", "error");
-    
+
     const clientsGrid = document.getElementById("clientes-list");
     if (clientsGrid) {
       clientsGrid.innerHTML = `
@@ -204,24 +214,22 @@ async function carregarClientes() {
 async function editarCliente(id) {
   try {
     console.log(`Tentando editar cliente com ID: ${id}`);
-    
-    // Corrigindo a URL para garantir que tenha a barra no final
+
     const res = await fetch(`http://localhost:3000/clientes/${id}`);
-    
-    console.log('Status da resposta:', res.status);
-    
+
+    console.log("Status da resposta:", res.status);
+
     if (!res.ok) {
       const errorText = await res.text();
-      console.error('Resposta não OK:', errorText);
+      console.error("Resposta não OK:", errorText);
       throw new Error("Cliente não encontrado");
     }
 
     const response = await res.json();
-    console.log('Dados recebidos:', response);
-    
-    // Verificando se a resposta tem a propriedade 'data' ou é o próprio objeto
+    console.log("Dados recebidos:", response);
+
     const cliente = response.data || response;
-    
+
     if (!cliente || !cliente.id_cliente) {
       throw new Error("Dados do cliente inválidos");
     }
@@ -230,49 +238,50 @@ async function editarCliente(id) {
     if (!form) {
       throw new Error("Formulário de cliente não encontrado");
     }
-    
+
     form.dataset.editId = id;
-    
+
     function setValueIfExists(id, value) {
       const element = document.getElementById(id);
       if (element) element.value = value || "";
     }
-    
-    // Preenchendo os campos do formulário
+
     setValueIfExists("nome", cliente.nome);
     setValueIfExists("cpf", formatarCPF(cliente.cpf));
     setValueIfExists("telefone", cliente.telefone);
     setValueIfExists("email", cliente.email);
-    
-    // Formatando a data de nascimento
+
     if (cliente.data_nascimento) {
       const dataParts = cliente.data_nascimento.split("-");
       if (dataParts.length === 3) {
-        setValueIfExists("data_nascimento", `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`);
+        setValueIfExists(
+          "data_nascimento",
+          `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`
+        );
       }
     }
-    
-    // Preenchendo a data de início do contrato (se existir)
+
     if (cliente.data_inicio_contrato) {
-      setValueIfExists("data_inicio_contrato", cliente.data_inicio_contrato.split('T')[0]);
+      setValueIfExists(
+        "data_inicio_contrato",
+        cliente.data_inicio_contrato.split("T")[0]
+      );
     }
-    
+
     setValueIfExists("sexo", cliente.sexo);
     setValueIfExists("rua", cliente.rua);
     setValueIfExists("bairro", cliente.bairro);
     setValueIfExists("cidade", cliente.cidade);
     setValueIfExists("cep", cliente.cep);
-    
-    // Carregar select de instrutores e contratos
+
     await carregarInstrutores();
     await carregarContratos();
-    
-    // Definir valores dos selects após carregá-los
+
     setTimeout(() => {
       if (cliente.id_instrutor) {
         setValueIfExists("id_instrutor", cliente.id_instrutor);
       }
-      
+
       if (cliente.id_contrato) {
         setValueIfExists("id_contrato", cliente.id_contrato);
       }
@@ -293,7 +302,6 @@ async function cadastrarCliente(event) {
   const rawData = Object.fromEntries(formData.entries());
   const isEdit = form.dataset.editId;
 
-  // Garantindo que os valores numéricos sejam tratados corretamente
   const data = {
     ...rawData,
     cpf: rawData.cpf.replace(/\D/g, ""),
@@ -302,10 +310,9 @@ async function cadastrarCliente(event) {
     id_instrutor: rawData.id_instrutor ? parseInt(rawData.id_instrutor) : null,
     id_contrato: rawData.id_contrato ? parseInt(rawData.id_contrato) : null, // Adicionado verificação
     data_nascimento: formatarDataParaBackend(rawData.data_nascimento),
-    data_inicio_contrato: formatarDataParaBackend(rawData.data_inicio_contrato) 
+    data_inicio_contrato: formatarDataParaBackend(rawData.data_inicio_contrato),
   };
 
-  // Verificação adicional para o contrato
   if (!data.id_contrato) {
     mostrarFeedback("Selecione um contrato válido", "error");
     return;
@@ -315,7 +322,9 @@ async function cadastrarCliente(event) {
     const res = await fetch("http://localhost:3000/clientes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(isEdit ? { id_cliente: parseInt(isEdit), ...data } : data),
+      body: JSON.stringify(
+        isEdit ? { id_cliente: parseInt(isEdit), ...data } : data
+      ),
     });
 
     const result = await res.json();
@@ -348,7 +357,6 @@ async function removerCliente(id) {
   }
 }
 
-// Feedback
 function mostrarFeedback(mensagem, tipo = "success") {
   const feedback = document.createElement("div");
   feedback.className = `feedback ${tipo}`;
@@ -364,7 +372,6 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-novo-cliente").addEventListener("click", () => {
     abrirModal();

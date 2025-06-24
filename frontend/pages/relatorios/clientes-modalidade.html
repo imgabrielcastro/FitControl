@@ -1,147 +1,154 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitControl - Relatórios por Modalidade</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../../css/style.css">
-</head>
-<body>
-  <div class="dashboard">
-    <!-- Menu lateral padronizado -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-logo">FC</div>
-        <div class="brand-name">FitControl</div>
-      </div>
-      
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="../../index.html" class="nav-link">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="../../pages/lista_clientes.html" class="nav-link">
-            <i class="fas fa-users"></i>
-            <span>Clientes</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="../../pages/lista_instrutores.html" class="nav-link">
-            <i class="fas fa-dumbbell"></i>
-            <span>Instrutores</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="../../pages/contratoslista.html" class="nav-link">
-            <i class="fas fa-file-contract"></i>
-            <span>Contratos</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="../../pages/cadastro-modalidade.html" class="nav-link">
-            <i class="fas fa-running"></i>
-            <span>Modalidades</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="../../pages/agenda.html" class="nav-link">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Agenda</span>
-          </a>
-        </li>
-        <li class="nav-item active">
-          <a href="#" class="nav-link">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FitControl - Relatórios por Modalidade</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="icon" href="../../assets/backgroundImage.jpg" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="dashboard">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-logo">FC</div>
+          <div class="brand-name">FitControl</div>
+        </div>
+
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="../../index.html" class="nav-link">
+              <i class="fas fa-home"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../../pages/lista_clientes.html" class="nav-link">
+              <i class="fas fa-users"></i>
+              <span>Clientes</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../../pages/lista_instrutores.html" class="nav-link">
+              <i class="fas fa-dumbbell"></i>
+              <span>Instrutores</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../../pages/contratoslista.html" class="nav-link">
+              <i class="fas fa-file-contract"></i>
+              <span>Contratos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../../pages/cadastro-modalidade.html" class="nav-link">
+              <i class="fas fa-running"></i>
+              <span>Modalidades</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../../pages/agenda.html" class="nav-link">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Agenda</span>
+            </a>
+          </li>
+          <li class="nav-item active">
+            <a href="#" class="nav-link">
+              <i class="fas fa-chart-bar"></i>
+              <span>Relatórios</span>
+            </a>
+          </li>
+        </ul>
+      </aside>
+
+      <main class="main-content">
+        <div class="header">
+          <h1 class="page-title">
             <i class="fas fa-chart-bar"></i>
-            <span>Relatórios</span>
-          </a>
-        </li>
-      </ul>
-    </aside>
+            Relatório de Clientes
+          </h1>
+        </div>
 
-    <main class="main-content">
-      <div class="header">
-        <h1 class="page-title">
-          <i class="fas fa-chart-bar"></i>
-          Relatório de Clientes
-        </h1>
-      </div>
+        <div class="filtros-container">
+          <div class="filtro-card">
+            <h3>Filtrar por Contrato</h3>
+            <div class="filtro-form">
+              <div class="form-group">
+                <label for="selectContrato">Contrato:</label>
+                <select id="selectContrato">
+                  <option value="">Carregando contratos...</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-      <div class="filtros-container">
-        <div class="filtro-card">
-          <h3>Filtrar por Contrato</h3>
-          <div class="filtro-form">
-            <div class="form-group">
-              <label for="selectContrato">Contrato:</label>
-              <select id="selectContrato">
-                <option value="">Carregando contratos...</option>
-              </select>
+          <div class="filtro-card">
+            <h3>Filtrar por Instrutor</h3>
+            <div class="filtro-form">
+              <div class="form-group">
+                <label for="selectInstrutor">Instrutor:</label>
+                <select id="selectInstrutor">
+                  <option value="">Carregando instrutores...</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="filtro-card">
-          <h3>Filtrar por Instrutor</h3>
-          <div class="filtro-form">
-            <div class="form-group">
-              <label for="selectInstrutor">Instrutor:</label>
-              <select id="selectInstrutor">
-                <option value="">Carregando instrutores...</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: center; margin: 20px 0;">
-        <button id="btnFiltrar" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px;">
-          <i class="fas fa-filter"></i> Filtrar
-        </button>
-      </div>
-
-      <div class="resultados-container">
-        <div class="resultados-header">
-          <h3>Clientes Filtrados</h3>
-          <button id="btnExportar" class="btn btn-export">
-            <i class="fas fa-file-excel"></i> Exportar para Excel
+        <div style="display: flex; justify-content: center; margin: 20px 0">
+          <button
+            id="btnFiltrar"
+            class="btn btn-primary"
+            style="padding: 12px 30px; font-size: 16px"
+          >
+            <i class="fas fa-filter"></i> Filtrar
           </button>
         </div>
 
-        <div id="loading" class="loading" style="display: none;">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p>Carregando dados...</p>
-        </div>
+        <div class="resultados-container">
+          <div class="resultados-header">
+            <h3>Clientes Filtrados</h3>
+            <button id="btnExportar" class="btn btn-export">
+              <i class="fas fa-file-excel"></i> Exportar para Excel
+            </button>
+          </div>
 
-        <div id="noResults" class="no-results" style="display: none;">
-          <i class="fas fa-info-circle"></i>
-          <p>Selecione um filtro e clique em "Filtrar" para gerar relatórios</p>
-        </div>
+          <div id="loading" class="loading" style="display: none">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando dados...</p>
+          </div>
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th>Contrato</th>
-                <th>Instrutor</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Dados serão preenchidos via JavaScript -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-  </div>
+          <div id="noResults" class="no-results" style="display: none">
+            <i class="fas fa-info-circle"></i>
+            <p>
+              Selecione um filtro e clique em "Filtrar" para gerar relatórios
+            </p>
+          </div>
 
-  <script src="../../js/relatorios.js"></script>
-</body>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Email</th>
+                  <th>Telefone</th>
+                  <th>Contrato</th>
+                  <th>Instrutor</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../../js/relatorios.js"></script>
+  </body>
 </html>
