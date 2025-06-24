@@ -67,57 +67,51 @@ async function editarCliente(id) {
     const response = await res.json();
     const cliente = response.data || response;
 
-    // Primeiro obtemos a referência do formulário
     const form = document.getElementById("form-cadastro-cliente");
     if (!form) {
       throw new Error("Formulário de cliente não encontrado");
     }
-    
-    // Definimos o ID de edição
+
     form.dataset.editId = id;
-    
-    // Função auxiliar para definir valor apenas se o elemento existir
+
     function setValueIfExists(id, value) {
       const element = document.getElementById(id);
       if (element) element.value = value || "";
     }
-    
-    // Preenche os campos básicos
+
     setValueIfExists("nome", cliente.nome);
     setValueIfExists("cpf", formatarCPF(cliente.cpf));
     setValueIfExists("telefone", cliente.telefone);
     setValueIfExists("email", cliente.email);
-    
-    // Formata a data de nascimento se existir
+
     if (cliente.data_nascimento) {
       const dataParts = cliente.data_nascimento.split("-");
       if (dataParts.length === 3) {
-        setValueIfExists("data_nascimento", `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`);
+        setValueIfExists(
+          "data_nascimento",
+          `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`
+        );
       }
     }
-    
+
     setValueIfExists("sexo", cliente.sexo);
     setValueIfExists("rua", cliente.rua);
     setValueIfExists("bairro", cliente.bairro);
     setValueIfExists("cidade", cliente.cidade);
     setValueIfExists("cep", cliente.cep);
     setValueIfExists("observacoes", cliente.observacoes);
-    
-    // Carrega os selects e depois seta os valores
+
     await carregarInstrutores();
     await carregarContratos();
-    
-    // Define o instrutor se existir
+
     if (cliente.id_instrutor) {
       setValueIfExists("id_instrutor", cliente.id_instrutor);
     }
-    
-    // Define o contrato se existir
+
     if (cliente.id_contrato) {
       setValueIfExists("id_contrato", cliente.id_contrato);
     }
 
-    // Abre o modal no modo de edição
     abrirModal(true);
   } catch (error) {
     console.error("Erro ao editar cliente:", error);
@@ -148,28 +142,26 @@ async function carregarContratos() {
 
 async function carregarClientes() {
   try {
-    console.log('Iniciando carregamento de clientes...');
+    console.log("Iniciando carregamento de clientes...");
     const res = await fetch("http://localhost:3000/clientes");
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || `Erro HTTP: ${res.status}`);
     }
 
     let clientes = await res.json();
-    console.log('Dados recebidos:', clientes); // Para debug
+    console.log("Dados recebidos:", clientes);
 
-    // Corrigindo a ordenação (usar 'nome' em vez de 'cliente_nome')
-    clientes.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    clientes.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
     const clientsGrid = document.getElementById("clientes-list");
     if (!clientsGrid) {
-      throw new Error('Elemento clientes-list não encontrado no DOM');
+      throw new Error("Elemento clientes-list não encontrado no DOM");
     }
-    
+
     clientsGrid.innerHTML = "";
 
-    // Verificando se há clientes para mostrar
     if (clientes.length === 0) {
       clientsGrid.innerHTML = `
         <div class="no-results">
@@ -185,16 +177,19 @@ async function carregarClientes() {
       card.className = "client-card fade-in";
       card.style.animationDelay = `${0.1 * index}s`;
 
-      // Adicionando verificações para evitar erros com valores undefined
       card.innerHTML = `
         <div class="client-header">
-          <div class="client-avatar">${cliente.nome?.charAt(0)?.toUpperCase() || 'C'}</div>
-          <div class="client-name">${cliente.nome || 'Cliente sem nome'}</div>
+          <div class="client-avatar">${
+            cliente.nome?.charAt(0)?.toUpperCase() || "C"
+          }</div>
+          <div class="client-name">${cliente.nome || "Cliente sem nome"}</div>
         </div>
         <div class="client-details">
           <div class="detail-item">
             <div class="detail-label">CPF:</div>
-            <div class="detail-value">${formatarCPF(cliente.cpf) || 'Não informado'}</div>
+            <div class="detail-value">${
+              formatarCPF(cliente.cpf) || "Não informado"
+            }</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Email:</div>
@@ -202,18 +197,28 @@ async function carregarClientes() {
           </div>
           <div class="detail-item">
             <div class="detail-label">Instrutor:</div>
-            <div class="detail-value">${cliente.instrutor_nome || "Não atribuído"}</div>
+            <div class="detail-value">${
+              cliente.instrutor_nome || "Não atribuído"
+            }</div>
           </div>
         </div>
         <div class="contract-info">
-          <div class="contract-name">${cliente.contrato_nome || 'Contrato não informado'}</div>
-          <div class="contract-value">R$ ${formatarValor(cliente.contrato_valor) || '0,00'}</div>
+          <div class="contract-name">${
+            cliente.contrato_nome || "Contrato não informado"
+          }</div>
+          <div class="contract-value">R$ ${
+            formatarValor(cliente.contrato_valor) || "0,00"
+          }</div>
         </div>
         <div class="client-actions">
-          <button class="btn btn-edit" onclick="editarCliente(${cliente.id_cliente})">
+          <button class="btn btn-edit" onclick="editarCliente(${
+            cliente.id_cliente
+          })">
             <i class="fas fa-edit"></i> Editar
           </button>
-          <button class="btn btn-remove" onclick="removerCliente(${cliente.id_cliente})">
+          <button class="btn btn-remove" onclick="removerCliente(${
+            cliente.id_cliente
+          })">
             <i class="fas fa-trash"></i> Remover
           </button>
         </div>
@@ -224,8 +229,7 @@ async function carregarClientes() {
   } catch (error) {
     console.error("Erro ao carregar clientes:", error);
     mostrarFeedback("Erro ao carregar lista de clientes", "error");
-    
-    // Mostrar mensagem de erro na interface
+
     const clientsGrid = document.getElementById("clientes-list");
     if (clientsGrid) {
       clientsGrid.innerHTML = `
@@ -324,7 +328,6 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarClientes();
 });
 
-// Funções específicas para modalidades
 async function carregarModalidades() {
   try {
     console.log("Iniciando carregamento de modalidades...");
@@ -409,7 +412,6 @@ async function carregarModalidades() {
       modalidadesGrid.appendChild(card);
     });
 
-    // Adiciona event listeners aos botões
     document.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", () => editarModalidade(btn.dataset.id));
     });
@@ -549,7 +551,6 @@ function fecharModalModalidade() {
   document.getElementById("modal-submit-btn").textContent = "Salvar Modalidade";
 }
 
-// Inicialização específica para a página de modalidades
 function initModalidades() {
   const btnNovaModalidade = document.getElementById("btn-nova-modalidade");
   const closeModal = document.querySelector("#modal-cadastro .close-modal");
@@ -572,12 +573,10 @@ function initModalidades() {
   carregarModalidades();
 }
 
-// Verifica se estamos na página de modalidades e inicializa
 if (document.getElementById("modalidades-list")) {
   document.addEventListener("DOMContentLoaded", initModalidades);
 }
 
-// Funções auxiliares
 function formatarCPF(cpf) {
   if (!cpf) return "";
   const numeros = cpf.replace(/\D/g, "");
@@ -599,7 +598,6 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// Funções para manipulação de instrutores
 async function carregarInstrutores() {
   try {
     const res = await fetch("http://localhost:3000/instrutores");
@@ -798,7 +796,6 @@ function fecharModal() {
   form.removeAttribute("data-edit-id");
 }
 
-// Filtro de busca
 function filtrarInstrutores() {
   const termo = document
     .getElementById("search-instrutores")
@@ -822,7 +819,6 @@ function filtrarInstrutores() {
   });
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("btn-novo-instrutor")

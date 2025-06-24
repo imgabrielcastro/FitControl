@@ -1,11 +1,9 @@
-// Variáveis globais
 let modalidades = [];
 let instrutores = [];
 let clientes = [];
 let currentDay = "SEG";
 let currentAgendaId = null;
 
-// Funções auxiliares
 function mostrarFeedback(mensagem, tipo = "success") {
   const feedback = document.createElement("div");
   feedback.className = `feedback ${tipo}`;
@@ -21,17 +19,14 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// Função para formatar horário
 function formatarHora(dataString) {
   if (!dataString) return "";
 
   try {
-    // Se já estiver no formato HH:MM
     if (typeof dataString === "string" && dataString.match(/^\d{2}:\d{2}$/)) {
       return dataString;
     }
 
-    // Se for um objeto Date ou string de data
     const date = new Date(dataString);
 
     if (isNaN(date.getTime())) {
@@ -47,7 +42,6 @@ function formatarHora(dataString) {
   }
 }
 
-// Função auxiliar para carregar recursos
 async function carregarRecurso(url, nome) {
   try {
     const response = await fetch(url);
@@ -73,10 +67,8 @@ async function carregarRecurso(url, nome) {
   }
 }
 
-// Carregar dependências
 async function carregarDependencias() {
   try {
-    // Carregar modalidades
     modalidades = await carregarRecurso(
       "http://localhost:3000/modalidades",
       "modalidades"
@@ -92,7 +84,6 @@ async function carregarDependencias() {
       selectModalidade.appendChild(option);
     });
 
-    // Carregar instrutores
     instrutores = await carregarRecurso(
       "http://localhost:3000/instrutores",
       "instrutores"
@@ -108,7 +99,6 @@ async function carregarDependencias() {
       selectInstrutor.appendChild(option);
     });
 
-    // Carregar clientes disponíveis
     clientes = await carregarRecurso(
       "http://localhost:3000/agendas/clientes/disponiveis",
       "clientes disponíveis"
@@ -128,7 +118,6 @@ async function carregarDependencias() {
   }
 }
 
-// Carregar agendas
 async function carregarAgendas(dia = currentDay) {
   try {
     const response = await fetch(`http://localhost:3000/agendas?dia=${dia}`);
@@ -211,14 +200,12 @@ async function carregarAgendas(dia = currentDay) {
   }
 }
 
-// Abrir formulário para nova agenda
 function abrirFormularioAgenda() {
   const form = document.getElementById("form-agenda");
   form.style.display = "block";
   document.getElementById("clientes-section").style.display = "none";
   document.getElementById("modal-agenda-title").textContent = "Nova Agenda";
 
-  // Resetar formulário
   form.reset();
   document.getElementById("agenda-id").value = "";
   document.getElementById("agenda-dia").value = currentDay;
@@ -226,7 +213,6 @@ function abrirFormularioAgenda() {
   currentAgendaId = null;
 }
 
-// Preencher formulário para edição
 async function editarAgenda(id) {
   try {
     const response = await fetch(`http://localhost:3000/agendas/${id}`);
@@ -242,7 +228,6 @@ async function editarAgenda(id) {
     currentAgendaId = id;
     document.getElementById("agenda-id").value = id;
 
-    // Preencher campos básicos
     document.getElementById("agenda-modalidade").value =
       agenda.id_modalidade || "";
     document.getElementById("agenda-instrutor").value =
@@ -254,14 +239,11 @@ async function editarAgenda(id) {
     document.getElementById("agenda-dia").value =
       agenda.diadasemana || currentDay;
 
-    // Obter número atual de clientes vinculados
     const numClientes = await carregarClientesVinculados(id);
 
-    // Atualizar título com vagas
     const modalTitle = document.getElementById("modal-agenda-title");
     modalTitle.textContent = `Editar Agenda (${numClientes}/${agenda.qtde_max_cli} vagas)`;
 
-    // Converter e preencher horários
     const horaIni =
       formatarHora(agenda.hora_ini) || formatarHora(agenda.data_ini);
     const horaFim =
@@ -270,15 +252,12 @@ async function editarAgenda(id) {
     document.getElementById("agenda-data-ini").value = horaIni;
     document.getElementById("agenda-data-fim").value = horaFim;
 
-    // Exibir formulário
     document.getElementById("form-agenda").style.display = "block";
     document.getElementById("clientes-section").style.display = "block";
 
-    // Exibir formulário
     document.getElementById("form-agenda").style.display = "block";
     document.getElementById("clientes-section").style.display = "block";
 
-    // Adicionar botão de limpar todos os clientes
     const limparButton = document.createElement("button");
     limparButton.className = "btn btn-danger";
     limparButton.innerHTML =
@@ -293,7 +272,6 @@ async function editarAgenda(id) {
   }
 }
 
-// Carregar clientes vinculados
 async function carregarClientesVinculados(idAgenda) {
   try {
     const response = await fetch(
@@ -340,96 +318,96 @@ async function carregarClientesVinculados(idAgenda) {
   }
 }
 
-// Limpar todos os clientes de uma agenda
-// Adicione esta função para remover todos os clientes
 async function removerTodosClientes(idAgenda) {
-  if (!confirm('Tem certeza que deseja remover TODOS os clientes desta agenda?')) return;
-  
+  if (
+    !confirm("Tem certeza que deseja remover TODOS os clientes desta agenda?")
+  )
+    return;
+
   try {
-    const response = await fetch(`http://localhost:3000/agendas/${idAgenda}/clientes`, {
-      method: 'DELETE'
-    });
-    
+    const response = await fetch(
+      `http://localhost:3000/agendas/${idAgenda}/clientes`,
+      {
+        method: "DELETE",
+      }
+    );
+
     const result = await response.json();
-    
+
     if (!response.ok) {
-      throw new Error(result.message || 'Erro ao remover clientes');
+      throw new Error(result.message || "Erro ao remover clientes");
     }
-    
-    mostrarFeedback('Todos os clientes foram removidos da agenda', 'success');
-    
-    // Atualizar a lista de clientes e o título
+
+    mostrarFeedback("Todos os clientes foram removidos da agenda", "success");
+
     const numClientes = await carregarClientesVinculados(idAgenda);
     const agendaQtdeMax = document.getElementById("agenda-qtde-max").value;
     const modalTitle = document.getElementById("modal-agenda-title");
     modalTitle.textContent = `Editar Agenda (${numClientes}/${agendaQtdeMax} vagas)`;
-    
   } catch (error) {
-    console.error('Erro ao remover clientes:', error);
-    mostrarFeedback('Erro ao remover clientes: ' + error.message, 'error');
+    console.error("Erro ao remover clientes:", error);
+    mostrarFeedback("Erro ao remover clientes: " + error.message, "error");
   }
 }
 
-// Modifique a função editarAgenda para adicionar o botão de remover todos
 async function editarAgenda(id) {
   try {
     const response = await fetch(`http://localhost:3000/agendas/${id}`);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Erro ${response.status}: ${errorText}`);
     }
-    
+
     const result = await response.json();
     const agenda = result.success ? result.data : result;
-    
+
     currentAgendaId = id;
     document.getElementById("agenda-id").value = id;
-    
-    // Preencher campos básicos
-    document.getElementById("agenda-modalidade").value = agenda.id_modalidade || "";
-    document.getElementById("agenda-instrutor").value = agenda.id_instrutor || "";
+
+    document.getElementById("agenda-modalidade").value =
+      agenda.id_modalidade || "";
+    document.getElementById("agenda-instrutor").value =
+      agenda.id_instrutor || "";
     document.getElementById("agenda-descricao").value = agenda.descricao || "";
-    document.getElementById("agenda-qtde-max").value = agenda.qtde_max_cli || "";
+    document.getElementById("agenda-qtde-max").value =
+      agenda.qtde_max_cli || "";
     document.getElementById("agenda-local").value = agenda.local || "";
-    document.getElementById("agenda-dia").value = agenda.diadasemana || currentDay;
-    
-    // Obter número atual de clientes vinculados
+    document.getElementById("agenda-dia").value =
+      agenda.diadasemana || currentDay;
+
     const numClientes = await carregarClientesVinculados(id);
-    
-    // Atualizar título com vagas
+
     const modalTitle = document.getElementById("modal-agenda-title");
     modalTitle.textContent = `Editar Agenda (${numClientes}/${agenda.qtde_max_cli} vagas)`;
-    
-    // Adicionar botão de remover todos os clientes
+
     const clientesSection = document.getElementById("clientes-section");
     if (!document.getElementById("btn-remover-todos")) {
       const btnRemoverTodos = document.createElement("button");
       btnRemoverTodos.id = "btn-remover-todos";
       btnRemoverTodos.className = "btn btn-danger";
-      btnRemoverTodos.innerHTML = '<i class="fas fa-users-slash"></i> Remover Todos os Clientes';
+      btnRemoverTodos.innerHTML =
+        '<i class="fas fa-users-slash"></i> Remover Todos os Clientes';
       btnRemoverTodos.addEventListener("click", () => removerTodosClientes(id));
       clientesSection.insertBefore(btnRemoverTodos, clientesSection.firstChild);
     }
-    
-    // Converter e preencher horários
-    const horaIni = formatarHora(agenda.hora_ini) || formatarHora(agenda.data_ini);
-    const horaFim = formatarHora(agenda.hora_fim) || formatarHora(agenda.data_fim);
-    
+
+    const horaIni =
+      formatarHora(agenda.hora_ini) || formatarHora(agenda.data_ini);
+    const horaFim =
+      formatarHora(agenda.hora_fim) || formatarHora(agenda.data_fim);
+
     document.getElementById("agenda-data-ini").value = horaIni;
     document.getElementById("agenda-data-fim").value = horaFim;
-    
-    // Exibir formulário
-    document.getElementById("form-agenda").style.display = 'block';
-    document.getElementById("clientes-section").style.display = 'block';
-    
+
+    document.getElementById("form-agenda").style.display = "block";
+    document.getElementById("clientes-section").style.display = "block";
   } catch (error) {
     console.error("Erro ao editar agenda:", error);
     mostrarFeedback("Erro ao editar agenda: " + error.message, "error");
   }
 }
 
-// Vincular cliente
 async function vincularCliente() {
   const idAgenda = document.getElementById("agenda-id").value;
   const idCliente = document.getElementById("cliente-select").value;
@@ -445,7 +423,6 @@ async function vincularCliente() {
   }
 
   try {
-    // Verificação no frontend para melhor UX
     const responseAgenda = await fetch(
       `http://localhost:3000/agendas/${idAgenda}`
     );
@@ -466,7 +443,6 @@ async function vincularCliente() {
       return;
     }
 
-    // Tentativa de vincular cliente
     const response = await fetch(
       `http://localhost:3000/agendas/${idAgenda}/clientes`,
       {
@@ -484,7 +460,6 @@ async function vincularCliente() {
 
     mostrarFeedback("Cliente vinculado com sucesso", "success");
 
-    // Atualizar a interface
     const numClientes = await carregarClientesVinculados(idAgenda);
     const modalTitle = document.getElementById("modal-agenda-title");
     modalTitle.textContent = `Editar Agenda (${numClientes}/${agenda.qtde_max_cli} vagas)`;
@@ -496,7 +471,6 @@ async function vincularCliente() {
   }
 }
 
-// Desvincular cliente
 async function desvincularCliente(idAgenda, idCliente) {
   try {
     const response = await fetch(
@@ -520,7 +494,6 @@ async function desvincularCliente(idAgenda, idCliente) {
   }
 }
 
-// Salvar agenda
 async function salvarAgenda(event) {
   event.preventDefault();
 
@@ -538,7 +511,6 @@ async function salvarAgenda(event) {
     diadasemana: form.querySelector("#agenda-dia").value,
   };
 
-  // Validar horários
   if (data.data_ini && data.data_fim) {
     const horaIni = new Date(`1970-01-01T${data.data_ini}:00`);
     const horaFim = new Date(`1970-01-01T${data.data_fim}:00`);
@@ -549,7 +521,6 @@ async function salvarAgenda(event) {
     }
   }
 
-  // Se estamos editando, incluir o ID
   if (id) {
     data.id_agenda = id;
   }
@@ -576,7 +547,6 @@ async function salvarAgenda(event) {
   }
 }
 
-// Excluir agenda
 async function excluirAgenda(id) {
   if (!confirm("Tem certeza que deseja excluir esta agenda?")) return;
 
@@ -603,9 +573,7 @@ function fecharModalAgenda() {
   document.getElementById("form-agenda").style.display = "none";
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", function () {
-  // Configurar abas
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
       document.querySelector(".tab-btn.active").classList.remove("active");
@@ -615,27 +583,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Botão nova agenda
   document
     .getElementById("btn-nova-agenda")
     .addEventListener("click", abrirFormularioAgenda);
 
-  // Botão cancelar
   document
     .getElementById("btn-cancelar-agenda")
     .addEventListener("click", fecharModalAgenda);
 
-  // Formulário de agenda
   document
     .getElementById("form-agenda")
     .addEventListener("submit", salvarAgenda);
 
-  // Vincular cliente
   document
     .getElementById("btn-vincular-cliente")
     .addEventListener("click", vincularCliente);
 
-  // Carregar dados iniciais
   carregarDependencias();
   carregarAgendas();
 });

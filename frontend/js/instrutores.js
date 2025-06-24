@@ -1,4 +1,3 @@
-// Funções auxiliares
 function formatarCPF(cpf) {
   if (!cpf) return "";
   const numeros = cpf.replace(/\D/g, "");
@@ -20,7 +19,6 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// CRUD Instrutores
 async function carregarInstrutores() {
   try {
     const res = await fetch("http://localhost:3000/instrutores");
@@ -186,7 +184,6 @@ async function removerInstrutor(id) {
   }
 }
 
-// Modal
 function abrirModal() {
   const modal = document.getElementById("modal-cadastro");
   const modalTitle = document.querySelector("#modal-cadastro h2");
@@ -208,7 +205,6 @@ function fecharModal() {
   form.removeAttribute("data-edit-id");
 }
 
-// Filtro
 function filtrarInstrutores() {
   const termo = document.getElementById("search-instrutores").value.toLowerCase();
   const cards = document.querySelectorAll(".client-card");
@@ -226,7 +222,6 @@ function filtrarInstrutores() {
   });
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-novo-instrutor").addEventListener("click", abrirModal);
   document.querySelector(".close-modal").addEventListener("click", fecharModal);

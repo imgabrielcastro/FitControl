@@ -1,4 +1,3 @@
-// Funções auxiliares
 function mostrarFeedback(mensagem, tipo = "success") {
   const feedback = document.createElement("div");
   feedback.className = `feedback ${tipo}`;
@@ -14,7 +13,6 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// CRUD Modalidades
 async function carregarModalidades() {
   try {
     console.log("Iniciando carregamento de modalidades...");
@@ -56,14 +54,18 @@ async function carregarModalidades() {
 
       card.innerHTML = `
         <div class="client-header">
-          <div class="client-avatar">${modalidade.nome.charAt(0).toUpperCase()}</div>
+          <div class="client-avatar">${modalidade.nome
+            .charAt(0)
+            .toUpperCase()}</div>
           <div class="client-name">${modalidade.nome}</div>
         </div>
         <div class="client-details">
           <div class="detail-item">
             <div class="detail-label">Status:</div>
             <div class="detail-value">
-              <span class="status-badge ${modalidade.ativo ? "active" : "inactive"}">
+              <span class="status-badge ${
+                modalidade.ativo ? "active" : "inactive"
+              }">
                 ${modalidade.ativo ? "Ativo" : "Inativo"}
               </span>
             </div>
@@ -74,11 +76,15 @@ async function carregarModalidades() {
           </div>
           <div class="detail-item">
             <div class="detail-label">Última Atualização:</div>
-            <div class="detail-value">${modalidade.data_atualizacao || "N/A"}</div>
+            <div class="detail-value">${
+              modalidade.data_atualizacao || "N/A"
+            }</div>
           </div>
         </div>
         <div class="client-actions">
-          <button class="btn ${modalidade.ativo ? "btn-remove" : "btn-activate"}" data-id="${modalidade.id_modalidade}">
+          <button class="btn ${
+            modalidade.ativo ? "btn-remove" : "btn-activate"
+          }" data-id="${modalidade.id_modalidade}">
             <i class="fas ${modalidade.ativo ? "fa-ban" : "fa-check"}"></i> 
             ${modalidade.ativo ? "Inativar" : "Ativar"}
           </button>
@@ -93,7 +99,9 @@ async function carregarModalidades() {
     });
 
     document.querySelectorAll(".btn-remove, .btn-activate").forEach((btn) => {
-      btn.addEventListener("click", () => alternarStatusModalidade(btn.dataset.id));
+      btn.addEventListener("click", () =>
+        alternarStatusModalidade(btn.dataset.id)
+      );
     });
 
     mostrarFeedback(message || "Modalidades carregadas com sucesso", "success");
@@ -116,13 +124,16 @@ async function editarModalidade(id) {
     const { data: modalidade } = await response.json();
 
     document.getElementById("modalidade-nome").value = modalidade.nome || "";
-    document.getElementById("modalidade-ativo").value = modalidade.ativo ? "true" : "false";
+    document.getElementById("modalidade-ativo").value = modalidade.ativo
+      ? "true"
+      : "false";
 
     const form = document.getElementById("form-cadastro-modalidade");
     form.dataset.editId = id;
 
     document.getElementById("modal-title").textContent = "Editar Modalidade";
-    document.getElementById("modal-submit-btn").textContent = "Salvar Alterações";
+    document.getElementById("modal-submit-btn").textContent =
+      "Salvar Alterações";
 
     document.getElementById("modal-cadastro").style.display = "block";
   } catch (error) {
@@ -133,14 +144,19 @@ async function editarModalidade(id) {
 
 async function alternarStatusModalidade(id) {
   try {
-    const confirmacao = confirm("Tem certeza que deseja alterar o status desta modalidade?");
+    const confirmacao = confirm(
+      "Tem certeza que deseja alterar o status desta modalidade?"
+    );
     if (!confirmacao) return;
 
     console.log(`Alternando status da modalidade ID: ${id}`);
-    const response = await fetch(`http://localhost:3000/modalidades/${id}/status`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `http://localhost:3000/modalidades/${id}/status`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -148,7 +164,10 @@ async function alternarStatusModalidade(id) {
     }
 
     const { message } = await response.json();
-    mostrarFeedback(message || "Status da modalidade atualizado com sucesso", "success");
+    mostrarFeedback(
+      message || "Status da modalidade atualizado com sucesso",
+      "success"
+    );
     await carregarModalidades();
   } catch (error) {
     console.error("Erro ao alternar status:", error);
@@ -189,7 +208,10 @@ async function salvarModalidade(event) {
 
     const { message } = await response.json();
     mostrarFeedback(
-      message || (isEdit ? "Modalidade atualizada com sucesso" : "Modalidade cadastrada com sucesso"),
+      message ||
+        (isEdit
+          ? "Modalidade atualizada com sucesso"
+          : "Modalidade cadastrada com sucesso"),
       "success"
     );
 
@@ -206,11 +228,11 @@ function fecharModalModalidade() {
   const form = document.getElementById("form-cadastro-modalidade");
   form.reset();
   delete form.dataset.editId;
-  document.getElementById("modal-title").textContent = "Cadastrar Nova Modalidade";
+  document.getElementById("modal-title").textContent =
+    "Cadastrar Nova Modalidade";
   document.getElementById("modal-submit-btn").textContent = "Salvar Modalidade";
 }
 
-// Inicialização
 function initModalidades() {
   const btnNovaModalidade = document.getElementById("btn-nova-modalidade");
   const closeModal = document.querySelector("#modal-cadastro .close-modal");
@@ -233,12 +255,6 @@ function initModalidades() {
   carregarModalidades();
 }
 
-// Verifica se estamos na página de modalidades e inicializa
 if (document.getElementById("modalidades-list")) {
   document.addEventListener("DOMContentLoaded", initModalidades);
 }
-/* Alterar
-<button class="btn btn-edit" data-id="${modalidade.id_modalidade}">
-            <i class="fas fa-edit"></i> Editar
-          </button>
-*/

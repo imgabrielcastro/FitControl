@@ -1,9 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../db');
+const db = require("../db");
 
-// Rota para obter todos os clientes (GET /clientes)
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const result = await db.query(`
       SELECT c.*, 
@@ -28,15 +27,17 @@ router.get('/', async (req, res) => {
     `);
     res.json(result.rows);
   } catch (err) {
-    console.error('Erro ao buscar clientes:', err);
-    res.status(500).json({ success: false, message: 'Erro ao buscar clientes' });
+    console.error("Erro ao buscar clientes:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Erro ao buscar clientes" });
   }
 });
 
-// Rota para obter um cliente específico (GET /clientes/:id) - ESSENCIAL PARA EDIÇÃO
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const result = await db.query(`
+    const result = await db.query(
+      `
       SELECT c.*, 
              i.nome as instrutor_nome,
              ct.nome as contrato_nome,
@@ -56,26 +57,28 @@ router.get('/:id', async (req, res) => {
       LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
       LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
       WHERE c.id_cliente = $1
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cliente não encontrado" });
     }
-    
+
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    console.error('Erro ao buscar cliente:', err);
-    res.status(500).json({ success: false, message: 'Erro ao buscar cliente' });
+    console.error("Erro ao buscar cliente:", err);
+    res.status(500).json({ success: false, message: "Erro ao buscar cliente" });
   }
 });
 
-// Rota para criar/atualizar cliente (POST /clientes)
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const { id_cliente, ...data } = req.body;
-  
+
   try {
     if (id_cliente) {
-      // Atualização
       const result = await db.query(
         `UPDATE Cliente SET
           nome = $1, cpf = $2, telefone = $3, email = $4, sexo = $5,
@@ -85,28 +88,36 @@ router.post('/', async (req, res) => {
          WHERE id_cliente = $14
          RETURNING *`,
         [
-          data.nome, data.cpf, data.telefone, data.email, data.sexo,
-          data.data_nascimento, data.rua, data.bairro, data.cidade,
-          data.cep, data.id_instrutor, data.id_contrato,
-          data.data_inicio_contrato, id_cliente
+          data.nome,
+          data.cpf,
+          data.telefone,
+          data.email,
+          data.sexo,
+          data.data_nascimento,
+          data.rua,
+          data.bairro,
+          data.cidade,
+          data.cep,
+          data.id_instrutor,
+          data.id_contrato,
+          data.data_inicio_contrato,
+          id_cliente,
         ]
       );
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          message: 'Cliente não encontrado' 
+          message: "Cliente não encontrado",
         });
       }
 
-      res.json({ 
+      res.json({
         success: true,
         data: result.rows[0],
-        message: 'Cliente atualizado com sucesso'
+        message: "Cliente atualizado com sucesso",
       });
-
     } else {
-      // Criação
       const result = await db.query(
         `INSERT INTO Cliente (
           nome, cpf, telefone, email, sexo, data_nascimento,
@@ -115,49 +126,60 @@ router.post('/', async (req, res) => {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *`,
         [
-          data.nome, data.cpf, data.telefone, data.email, data.sexo,
-          data.data_nascimento, data.rua, data.bairro, data.cidade,
-          data.cep, data.id_instrutor, data.id_contrato,
-          data.data_inicio_contrato
+          data.nome,
+          data.cpf,
+          data.telefone,
+          data.email,
+          data.sexo,
+          data.data_nascimento,
+          data.rua,
+          data.bairro,
+          data.cidade,
+          data.cep,
+          data.id_instrutor,
+          data.id_contrato,
+          data.data_inicio_contrato,
         ]
       );
-      
-      res.status(201).json({ 
+
+      res.status(201).json({
         success: true,
         data: result.rows[0],
-        message: 'Cliente cadastrado com sucesso'
+        message: "Cliente cadastrado com sucesso",
       });
     }
   } catch (err) {
-    console.error('Erro ao salvar cliente:', err);
-    res.status(500).json({ 
+    console.error("Erro ao salvar cliente:", err);
+    res.status(500).json({
       success: false,
-      message: err.detail || 'Erro ao salvar cliente'
+      message: err.detail || "Erro ao salvar cliente",
     });
   }
 });
 
-// Rota para deletar cliente (DELETE /clientes/:id)
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
-    const result = await db.query('DELETE FROM Cliente WHERE id_cliente = $1 RETURNING *', [req.params.id]);
-    
+    const result = await db.query(
+      "DELETE FROM Cliente WHERE id_cliente = $1 RETURNING *",
+      [req.params.id]
+    );
+
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Cliente não encontrado' 
+        message: "Cliente não encontrado",
       });
     }
 
-    res.json({ 
+    res.json({
       success: true,
-      message: 'Cliente removido com sucesso'
+      message: "Cliente removido com sucesso",
     });
   } catch (err) {
-    console.error('Erro ao remover cliente:', err);
-    res.status(500).json({ 
+    console.error("Erro ao remover cliente:", err);
+    res.status(500).json({
       success: false,
-      message: err.detail || 'Erro ao remover cliente'
+      message: err.detail || "Erro ao remover cliente",
     });
   }
 });

@@ -1,4 +1,3 @@
-// Funções auxiliares
 function formatarValor(valor) {
   if (!valor) return "0,00";
   const num = typeof valor === "string" ? parseFloat(valor) : valor;
@@ -14,7 +13,6 @@ function formatarDuracao(dias) {
   return `${dias} ${dias === 1 ? 'dia' : 'dias'}`;
 }
 
-// Modal
 function abrirModal(edicao = false) {
   const modal = document.getElementById("modal-cadastro");
   const modalTitle = document.querySelector("#modal-cadastro h2");
@@ -40,7 +38,6 @@ function fecharModal() {
   submitButton.textContent = "Cadastrar Contrato";
 }
 
-// CRUD Contratos
 async function carregarContratos() {
   try {
     const res = await fetch("http://localhost:3000/contratos");
@@ -224,7 +221,6 @@ async function desativarContrato(id) {
   }
 }
 
-// Feedback
 function mostrarFeedback(mensagem, tipo = "success") {
   const feedback = document.createElement("div");
   feedback.className = `feedback ${tipo}`;
@@ -240,7 +236,6 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 10);
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-novo-contrato").addEventListener("click", abrirModal);
   document.querySelector(".close-modal").addEventListener("click", fecharModal);
