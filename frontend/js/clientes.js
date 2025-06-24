@@ -13,8 +13,21 @@ function formatarValor(valor) {
 
 function formatarDataParaBackend(dataString) {
   if (!dataString) return null;
-  const [day, month, year] = dataString.split("/");
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  
+  // Verifica se a data já está no formato backend (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
+    return dataString;
+  }
+  
+  // Verifica se está no formato DD/MM/YYYY
+  if (typeof dataString === 'string' && dataString.includes('/')) {
+    const [day, month, year] = dataString.split('/');
+    if (day && month && year) {
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+  }
+  
+  return null;
 }
 
 // Modal
@@ -122,16 +135,18 @@ async function carregarClientes() {
       card.className = "client-card fade-in";
       card.style.animationDelay = `${0.1 * index}s`;
 
-      // Calcular dias restantes (se houver contrato com duração)
-      let diasRestantesInfo = '';
-      if (cliente.dias_restantes !== undefined && cliente.dias_restantes !== null) {
-        const diasRestantes = Math.floor(cliente.dias_restantes);
-        const statusClass = diasRestantes <= 0 ? 'vencido' : (diasRestantes <= 7 ? 'prestes-a-vencer' : 'ativo');
-        diasRestantesInfo = `
-          <div class="dias-restantes ${statusClass}">
-            ${diasRestantes <= 0 ? 'Vencido' : `${diasRestantes} dias restantes`}
-          </div>
-        `;
+      // Adicionando lógica para mostrar dias restantes
+      let statusContrato = "";
+      if (cliente.dias_restantes !== null) {
+        if (cliente.dias_restantes > 0) {
+          statusContrato = `<div class="contract-days remaining">${cliente.dias_restantes} dias restantes</div>`;
+        } else if (cliente.dias_restantes === 0) {
+          statusContrato = `<div class="contract-days expiring">Último dia</div>`;
+        } else {
+          statusContrato = `<div class="contract-days expired">Expirado há ${Math.abs(cliente.dias_restantes)} dias</div>`;
+        }
+      } else {
+        statusContrato = `<div class="contract-days unknown">Duração não definida</div>`;
       }
 
       card.innerHTML = `
@@ -156,7 +171,7 @@ async function carregarClientes() {
         <div class="contract-info">
           <div class="contract-name">${cliente.contrato_nome || 'Contrato não informado'}</div>
           <div class="contract-value">R$ ${formatarValor(cliente.contrato_valor) || '0,00'}</div>
-          ${diasRestantesInfo}
+          ${statusContrato}
         </div>
         <div class="client-actions">
           <button class="btn btn-edit" onclick="editarCliente(${cliente.id_cliente})">
@@ -188,12 +203,28 @@ async function carregarClientes() {
 
 async function editarCliente(id) {
   try {
-    // Corrigindo a URL para incluir a barra antes do id
+    console.log(`Tentando editar cliente com ID: ${id}`);
+    
+    // Corrigindo a URL para garantir que tenha a barra no final
     const res = await fetch(`http://localhost:3000/clientes/${id}`);
-    if (!res.ok) throw new Error("Cliente não encontrado");
+    
+    console.log('Status da resposta:', res.status);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Resposta não OK:', errorText);
+      throw new Error("Cliente não encontrado");
+    }
 
     const response = await res.json();
+    console.log('Dados recebidos:', response);
+    
+    // Verificando se a resposta tem a propriedade 'data' ou é o próprio objeto
     const cliente = response.data || response;
+    
+    if (!cliente || !cliente.id_cliente) {
+      throw new Error("Dados do cliente inválidos");
+    }
 
     const form = document.getElementById("form-cadastro-cliente");
     if (!form) {
@@ -207,11 +238,13 @@ async function editarCliente(id) {
       if (element) element.value = value || "";
     }
     
+    // Preenchendo os campos do formulário
     setValueIfExists("nome", cliente.nome);
     setValueIfExists("cpf", formatarCPF(cliente.cpf));
     setValueIfExists("telefone", cliente.telefone);
     setValueIfExists("email", cliente.email);
     
+    // Formatando a data de nascimento
     if (cliente.data_nascimento) {
       const dataParts = cliente.data_nascimento.split("-");
       if (dataParts.length === 3) {
@@ -219,23 +252,31 @@ async function editarCliente(id) {
       }
     }
     
+    // Preenchendo a data de início do contrato (se existir)
+    if (cliente.data_inicio_contrato) {
+      setValueIfExists("data_inicio_contrato", cliente.data_inicio_contrato.split('T')[0]);
+    }
+    
     setValueIfExists("sexo", cliente.sexo);
     setValueIfExists("rua", cliente.rua);
     setValueIfExists("bairro", cliente.bairro);
     setValueIfExists("cidade", cliente.cidade);
     setValueIfExists("cep", cliente.cep);
-    setValueIfExists("observacoes", cliente.observacoes);
     
+    // Carregar select de instrutores e contratos
     await carregarInstrutores();
     await carregarContratos();
     
-    if (cliente.id_instrutor) {
-      setValueIfExists("id_instrutor", cliente.id_instrutor);
-    }
-    
-    if (cliente.id_contrato) {
-      setValueIfExists("id_contrato", cliente.id_contrato);
-    }
+    // Definir valores dos selects após carregá-los
+    setTimeout(() => {
+      if (cliente.id_instrutor) {
+        setValueIfExists("id_instrutor", cliente.id_instrutor);
+      }
+      
+      if (cliente.id_contrato) {
+        setValueIfExists("id_contrato", cliente.id_contrato);
+      }
+    }, 100);
 
     abrirModal(true);
   } catch (error) {
@@ -260,9 +301,8 @@ async function cadastrarCliente(event) {
     cep: rawData.cep?.replace(/\D/g, "") || null,
     id_instrutor: rawData.id_instrutor ? parseInt(rawData.id_instrutor) : null,
     id_contrato: rawData.id_contrato ? parseInt(rawData.id_contrato) : null, // Adicionado verificação
-    data_nascimento: rawData.data_nascimento
-      ? formatarDataParaBackend(rawData.data_nascimento)
-      : null,
+    data_nascimento: formatarDataParaBackend(rawData.data_nascimento),
+    data_inicio_contrato: formatarDataParaBackend(rawData.data_inicio_contrato) 
   };
 
   // Verificação adicional para o contrato

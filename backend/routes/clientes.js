@@ -33,6 +33,42 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Rota para obter um cliente específico (GET /clientes/:id) - ESSENCIAL PARA EDIÇÃO
+router.get('/:id', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT c.*, 
+             i.nome as instrutor_nome,
+             ct.nome as contrato_nome,
+             ct.valor as contrato_valor,
+             ct.duracao_contrato,
+             CASE 
+               WHEN c.data_inicio_contrato IS NOT NULL AND ct.duracao_contrato IS NOT NULL 
+               THEN (c.data_inicio_contrato + (ct.duracao_contrato * INTERVAL '1 day'))::date
+               ELSE NULL
+             END as data_fim_contrato,
+             CASE 
+               WHEN c.data_inicio_contrato IS NOT NULL AND ct.duracao_contrato IS NOT NULL 
+               THEN (c.data_inicio_contrato + (ct.duracao_contrato * INTERVAL '1 day'))::date - CURRENT_DATE
+               ELSE NULL
+             END as dias_restantes
+      FROM Cliente c
+      LEFT JOIN Instrutor i ON c.id_instrutor = i.id_instrutor
+      LEFT JOIN Contrato ct ON c.id_contrato = ct.id_contrato
+      WHERE c.id_cliente = $1
+    `, [req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
+    }
+    
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('Erro ao buscar cliente:', err);
+    res.status(500).json({ success: false, message: 'Erro ao buscar cliente' });
+  }
+});
+
 // Rota para criar/atualizar cliente (POST /clientes)
 router.post('/', async (req, res) => {
   const { id_cliente, ...data } = req.body;
@@ -44,13 +80,15 @@ router.post('/', async (req, res) => {
         `UPDATE Cliente SET
           nome = $1, cpf = $2, telefone = $3, email = $4, sexo = $5,
           data_nascimento = $6, rua = $7, bairro = $8, cidade = $9,
-          cep = $10, id_instrutor = $11, id_contrato = $12
-         WHERE id_cliente = $13
+          cep = $10, id_instrutor = $11, id_contrato = $12,
+          data_inicio_contrato = $13
+         WHERE id_cliente = $14
          RETURNING *`,
         [
           data.nome, data.cpf, data.telefone, data.email, data.sexo,
           data.data_nascimento, data.rua, data.bairro, data.cidade,
-          data.cep, data.id_instrutor, data.id_contrato, id_cliente
+          data.cep, data.id_instrutor, data.id_contrato,
+          data.data_inicio_contrato, id_cliente
         ]
       );
 
@@ -72,13 +110,15 @@ router.post('/', async (req, res) => {
       const result = await db.query(
         `INSERT INTO Cliente (
           nome, cpf, telefone, email, sexo, data_nascimento,
-          rua, bairro, cidade, cep, id_instrutor, id_contrato
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          rua, bairro, cidade, cep, id_instrutor, id_contrato,
+          data_inicio_contrato
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *`,
         [
           data.nome, data.cpf, data.telefone, data.email, data.sexo,
           data.data_nascimento, data.rua, data.bairro, data.cidade,
-          data.cep, data.id_instrutor, data.id_contrato
+          data.cep, data.id_instrutor, data.id_contrato,
+          data.data_inicio_contrato
         ]
       );
       
